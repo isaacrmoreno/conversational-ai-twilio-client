@@ -189,7 +189,7 @@ export default function CallLogs() {
         {data.calls.map((call: CallLog) => (
           <Card key={call.sid} className='overflow-hidden transition-all hover:shadow-md'>
             <CardContent className='p-0'>
-              <div className='p-6 space-y-4'>
+              <div className='p-4 space-y-2'>
                 <div className='flex justify-between items-center flex-wrap gap-2'>
                   <div className='flex items-center'>
                     {call.from === call.to ? (
@@ -213,13 +213,13 @@ export default function CallLogs() {
                 </div>
 
                 <div className='grid md:grid-cols-3 gap-4'>
-                  <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-1'>From</p>
-                    <p className='font-medium'>{formatPhoneNumber(call.from)}</p>
+                  <div className='flex flex-row items-center'>
+                    <p className='text-sm font-medium text-muted-foreground mr-1'>From</p>
+                    <p className='text-sm font-medium'>{formatPhoneNumber(call.from)}</p>
                   </div>
-                  <div>
-                    <p className='text-sm font-medium text-muted-foreground mb-1'>To</p>
-                    <p className='font-medium'>{formatPhoneNumber(call.to)}</p>
+                  <div className='flex flex-row items-center'>
+                    <p className='text-sm font-medium text-muted-foreground mr-1'>To</p>
+                    <p className='text-sm font-medium'>{formatPhoneNumber(call.to)}</p>
                   </div>
                   <div>
                     <p className='text-sm font-medium text-muted-foreground mb-1'>Duration</p>

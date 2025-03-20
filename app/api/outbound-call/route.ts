@@ -4,12 +4,17 @@ export async function POST(request: Request) {
   try {
     const body = await request.json()
 
-    if (!body.prompt || !body.first_message || !body.number) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    if (!body.prompt || !body.first_message || !body.numbers || !Array.isArray(body.numbers)) {
+      return NextResponse.json({ error: 'Missing required fields or invalid numbers array' }, { status: 400 })
     }
 
-    if (!/^\d{10}$/.test(body.number)) {
-      return NextResponse.json({ error: 'Invalid phone number format. Must be 10 digits.' }, { status: 400 })
+    for (let number of body.numbers) {
+      if (!/^\d{10}$/.test(number)) {
+        return NextResponse.json(
+          { error: `Invalid phone number format. Each phone number must be 10 digits.` },
+          { status: 400 }
+        )
+      }
     }
 
     const response = await fetch(`${process.env.RENDER_URL}/outbound-call`, {

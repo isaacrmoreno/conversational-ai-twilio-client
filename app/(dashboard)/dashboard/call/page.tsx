@@ -22,10 +22,11 @@ export default function CallPage() {
 
     const formData = new FormData(event.currentTarget)
 
+    const phoneNumbers = formData.get('numbers') as string
     const callObject = {
       prompt: formData.get('prompt'),
       first_message: formData.get('first_message'),
-      number: formData.get('number')
+      numbers: phoneNumbers.split(',').map((num) => num.trim()) // Split the input into an array of numbers
     }
 
     try {
@@ -84,19 +85,19 @@ export default function CallPage() {
               </div>
 
               <div className='space-y-2'>
-                <label htmlFor='number' className='text-sm font-medium'>
-                  Phone Number
+                <label htmlFor='numbers' className='text-sm font-medium'>
+                  Phone Numbers (comma separated)
                 </label>
                 <Input
-                  id='number'
-                  name='number'
-                  placeholder='Enter 10-digit phone number...'
-                  type='tel'
-                  pattern='[0-9]{10}'
-                  title='Please enter a valid 10-digit phone number'
+                  id='numbers'
+                  name='numbers'
+                  placeholder='Enter phone numbers separated by commas'
+                  type='text'
                   required
                 />
-                <p className='text-sm text-muted-foreground'>Enter a 10-digit phone number without spaces or dashes.</p>
+                <p className='text-sm text-muted-foreground'>
+                  Enter phone numbers separated by commas. E.g., 1234567890, 0987654321.
+                </p>
               </div>
 
               <Button type='submit' className='w-full' disabled={isLoading}>

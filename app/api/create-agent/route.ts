@@ -68,7 +68,6 @@ export async function POST() {
       }
     })
 
-    // For now, we'll just simulate a successful response
     return NextResponse.json({ success: true, message: 'Agent created successfully' })
   } catch (error) {
     console.error('Error creating agent:', error)

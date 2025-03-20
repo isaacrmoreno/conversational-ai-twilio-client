@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid phone number format. Must be 10 digits.' }, { status: 400 })
     }
 
-    const response = await fetch('https://conversational-ai-twilio-server.onrender.com/outbound-call', {
+    const response = await fetch(`${process.env.RENDER_URL}/outbound-call`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

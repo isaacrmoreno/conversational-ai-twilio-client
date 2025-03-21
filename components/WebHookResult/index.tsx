@@ -10,16 +10,14 @@ export default function WebhookResult() {
   useEffect(() => {
     async function fetchWebhookData() {
       try {
-        const response = await fetch('https://conversational-ai-twilio-server.onrender.com/webhook/elevenlabs', {
+        const response = await fetch('/api/convai-webhook', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
             // Optionally add authorization headers if needed
-            // 'x-elevenlabs-signature': 'your-signature', // For example if your server checks the signature
           },
           body: JSON.stringify({
             // Add any additional data you want to send with the request if necessary
-            testData: 'samplePayload'
           })
         })
 

@@ -3,26 +3,36 @@
 import useSWR from 'swr'
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
 import { fetcher } from '@/utils'
 
 export default function AgentPage() {
-  const { data, error, mutate } = useSWR(`/api/list-agents`, fetcher)
+  const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
 
-  const agents = data?.data.agents
-
-  console.log('data::', data?.data)
-  console.log('error:', error)
+  const agents = data?.data
 
   const [isLoading, setIsLoading] = useState(false)
   const [agentCreated, setAgentCreated] = useState(false)
+  const [agentName, setAgentName] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const createAgent = async () => {
+    if (!agentName.trim()) {
+      setErrorMessage('Agent name cannot be blank.')
+      return
+    }
+
     setIsLoading(true)
     try {
-      const response = await fetch('/api/create-agent', {
-        method: 'POST'
+      const response = await fetch('/api/agents/create-agent', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: agentName
+        })
       })
 
       if (!response.ok) {
@@ -30,7 +40,9 @@ export default function AgentPage() {
       }
 
       setAgentCreated(true)
-      mutate() // Refresh the data after creating a new agent
+      setAgentName('')
+      setErrorMessage('')
+      mutate()
     } catch (error) {
       console.error('Error creating agent:', error)
     } finally {
@@ -38,8 +50,8 @@ export default function AgentPage() {
     }
   }
 
-  const formatDate = (unixTimestamp: number) => {
-    const date = new Date(unixTimestamp * 1000)
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp)
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
@@ -54,20 +66,35 @@ export default function AgentPage() {
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-2xl font-bold'>Agent Management</h1>
-        <Button onClick={createAgent} disabled={isLoading}>
-          {isLoading ? (
-            <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              Creating...
-            </>
-          ) : (
-            <>
-              <Plus className='h-4 w-4 mr-2' />
-              Create Agent
-            </>
-          )}
-        </Button>
+        <div className='flex items-center'>
+          <input
+            type='text'
+            placeholder='Enter agent name'
+            value={agentName}
+            onChange={(e) => setAgentName(e.target.value)}
+            className='mr-4 p-2 border rounded'
+          />
+          <Button onClick={createAgent} disabled={isLoading}>
+            {isLoading ? (
+              <>
+                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                Creating...
+              </>
+            ) : (
+              <>
+                <Plus className='h-4 w-4 mr-2' />
+                Create Agent
+              </>
+            )}
+          </Button>
+        </div>
       </div>
+
+      {errorMessage && (
+        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
+          <p className='text-red-800'>{errorMessage}</p>
+        </div>
+      )}
 
       {error && (
         <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
@@ -101,7 +128,6 @@ export default function AgentPage() {
               <CardHeader className='pb-3'>
                 <div className='flex justify-between items-start'>
                   <CardTitle className='text-lg'>{agent.name}</CardTitle>
-                  {/* <Badge variant='outline'>{agent.access_info.role}</Badge> */}
                 </div>
                 <CardDescription>ID: {agent.agent_id.substring(0, 8)}...</CardDescription>
               </CardHeader>
@@ -109,19 +135,14 @@ export default function AgentPage() {
                 <div className='space-y-2 text-sm'>
                   <div className='flex justify-between'>
                     <span className='text-muted-foreground'>Created by:</span>
-                    <span className='font-medium'>{agent.access_info.creator_name}</span>
+                    <span className='font-medium'>{agent.creator_name}</span>
                   </div>
                   <div className='flex justify-between'>
                     <span className='text-muted-foreground'>Created on:</span>
-                    <span className='font-medium'>{formatDate(agent.created_at_unix_secs)}</span>
+                    <span className='font-medium'>{formatDate(agent.created_at)}</span>
                   </div>
                 </div>
               </CardContent>
-              {/* <CardFooter className='bg-muted/50 pt-3'>
-                <Button variant='outline' className='w-full' size='sm'>
-                  Manage Agent
-                </Button>
-              </CardFooter> */}
             </Card>
           ))}
         </div>

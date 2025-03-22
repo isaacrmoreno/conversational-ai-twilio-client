@@ -1,10 +1,22 @@
 import { ElevenLabsClient } from 'elevenlabs'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db/drizzle'
+import { agents } from '@/lib/db/schema'
 
-export async function POST() {
+import { getUser } from '@/lib/db/queries'
+
+export async function POST(req: NextRequest) {
+  const { name } = await req.json()
+
+  const user = await getUser()
+
+  if (!user) {
+    return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 })
+  }
+
   try {
     const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY })
-    await client.conversationalAi.createAgent({
+    const response = await client.conversationalAi.createAgent({
       use_tool_ids: true,
       conversation_config: {
         asr: {
@@ -65,7 +77,17 @@ export async function POST() {
           allowlist: [],
           shareable_token: ''
         }
-      }
+      },
+      name: name
+    })
+
+    const agentId = response.agent_id
+
+    await db.insert(agents).values({
+      agent_id: agentId,
+      name: name,
+      creator_id: user.id,
+      creator_email: user.email
     })
 
     return NextResponse.json({ success: true, message: 'Agent created successfully' })

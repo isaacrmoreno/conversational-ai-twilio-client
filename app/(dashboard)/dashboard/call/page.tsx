@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useRouter } from 'next/navigation'
-import WebhookResult from '@/components/WebHookResult'
 
 export default function CallPage() {
   const router = useRouter()
@@ -118,7 +117,6 @@ export default function CallPage() {
                 <pre className='bg-muted p-4 rounded-md w-full overflow-auto'>{JSON.stringify(result, null, 2)}</pre>
               </div>
             )}
-            <WebhookResult />
           </CardContent>
         </Card>
       </div>

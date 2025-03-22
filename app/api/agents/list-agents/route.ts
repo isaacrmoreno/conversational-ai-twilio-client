@@ -22,6 +22,7 @@ export async function GET() {
     }
 
     const userAgentsFromDB = await db.select().from(agents).where(eq(agents.creator_email, user.email)).execute()
+
     if (userAgentsFromDB.length === 0) {
       return NextResponse.json(
         { success: false, message: 'No agents found for the user in the database' },
@@ -37,14 +38,7 @@ export async function GET() {
       creator_name: user.name
     }))
 
-    if (userAgentsFromDB.length === 0) {
-      return NextResponse.json({ success: false, message: 'No matching agents found for the user' }, { status: 404 })
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: formattedAgents
-    })
+    return NextResponse.json({ success: true, data: formattedAgents })
   } catch (error) {
     console.error('Error retrieving agents:', error)
     return NextResponse.json({ success: false, message: 'Failed to retrieve agents' }, { status: 500 })

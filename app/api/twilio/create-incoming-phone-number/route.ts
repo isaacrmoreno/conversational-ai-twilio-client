@@ -6,19 +6,18 @@ const authToken = process.env.TWILIO_AUTH_TOKEN
 const client = twilio(accountSid, authToken)
 
 export async function GET(req: NextRequest) {
-  const areaCodeParam = req.nextUrl.searchParams.get('areaCode')
+  const { phoneNumber } = await req.json()
 
-  const areaCode = areaCodeParam ? parseInt(areaCodeParam, 10) : undefined
-
-  if (!areaCode || isNaN(areaCode)) {
-    return NextResponse.json({ success: false, message: 'Invalid or missing area code' }, { status: 400 })
+  if (!phoneNumber) {
+    return NextResponse.json({ success: false, message: 'Invalid or missing incoming phone number' }, { status: 400 })
   }
 
   try {
-    const response = await client.availablePhoneNumbers('US').local.list({
-      areaCode: areaCode,
-      limit: 10
+    const response = await client.incomingPhoneNumbers.create({
+      phoneNumber: phoneNumber
     })
+
+    console.log('response', response)
 
     return NextResponse.json({ success: true, data: response })
   } catch (error) {

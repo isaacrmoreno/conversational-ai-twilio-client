@@ -57,7 +57,7 @@ export default function NumberMarketplacePage() {
 
   useEffect(() => {
     const checkIfUserHasNumber = async () => {
-      const res = await fetch(`/api/number/check-user-number`)
+      const res = await fetch(`/api/numbers/check-user-number`)
       const data = await res.json()
       if (data.success && data.hasNumber) {
         setHasNumber(true)
@@ -227,9 +227,9 @@ const PhoneNumberCard = ({ number, onPurchaseSuccess, onPurchaseError }: PhoneNu
             <Badge variant='outline' className='text-xs'>
               {number.region}
             </Badge>
-            {number.postalCode && (
+            {number.locality && (
               <Badge variant='outline' className='text-xs'>
-                Postal: {number.postalCode}
+                Locality: {number.locality}
               </Badge>
             )}
           </div>

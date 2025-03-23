@@ -1,20 +1,25 @@
 'use client'
 
 import type React from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Loader2, RotateCw, Search } from 'lucide-react'
+import { Loader2, RotateCw, Search, Phone, CheckCircle, XCircle } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetcher } from '@/utils'
 import type { PhoneNumber } from '@/types'
-// import { SubmitButton } from '@/app/(dashboard)/pricing/submit-button'
-// import { checkoutAction } from '@/lib/payments/actions'
+import { Badge } from '@/components/ui/badge'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function NumberMarketplacePage() {
   const [areaCode, setAreaCode] = useState<string>('')
   const [shouldFetch, setShouldFetch] = useState<boolean>(false)
+  const [hasNumber, setHasNumber] = useState<boolean>(false)
+  const [notification, setNotification] = useState<{
+    message: string
+    type: 'success' | 'error' | null
+  } | null>(null)
 
   const { data, error, isLoading, mutate } = useSWR(
     shouldFetch ? `/api/twilio/available-phone-numbers?areaCode=${areaCode}` : null,
@@ -26,16 +31,20 @@ export default function NumberMarketplacePage() {
 
   const handleAreaCodeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAreaCode(e.target.value)
+    // Clear notification when user starts a new search
+    setNotification(null)
   }
 
   const handleSearch = () => {
     if (areaCode.length === 3) {
       setShouldFetch(true)
+      setNotification(null)
     }
   }
 
   const handleRotate = () => {
     mutate()
+    setNotification(null)
   }
 
   const handleButtonClick = () => {
@@ -46,48 +55,113 @@ export default function NumberMarketplacePage() {
     }
   }
 
+  useEffect(() => {
+    const checkIfUserHasNumber = async () => {
+      const res = await fetch(`/api/number/check-user-number`)
+      const data = await res.json()
+      if (data.success && data.hasNumber) {
+        setHasNumber(true)
+      }
+    }
+
+    checkIfUserHasNumber()
+  }, [])
+
   return (
-    <div className='max-w-3xl mx-auto p-4'>
+    <div className='max-w-5xl mx-auto p-4'>
       <h1 className='text-2xl font-bold mb-4'>Number Marketplace</h1>
 
-      <div className='flex space-x-2 mb-4'>
-        <Input
-          type='text'
-          value={areaCode}
-          onChange={handleAreaCodeChange}
-          maxLength={3}
-          placeholder='Enter Area Code'
-          className='w-32'
-        />
-        <Button
-          onClick={handleButtonClick}
-          disabled={!hasResults && areaCode.length !== 3}
-          className='flex items-center'>
-          {hasResults ? (
-            <>
-              <RotateCw className='mr-2 h-4 w-4' /> Rotate
-            </>
-          ) : (
-            <>
-              <Search className='mr-2 h-4 w-4' /> Search
-            </>
-          )}
-        </Button>
-      </div>
-
-      {isLoading && <Loader2 className='animate-spin' />}
-      {error && <div className='text-red-500'>Error loading numbers...</div>}
-
-      {numbers && numbers.length === 0 && (
-        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
-          <p className='text-red-800'>No numbers found for area code {areaCode}</p>
+      {notification && (
+        <div
+          className={`mb-4 p-3 rounded-md ${
+            notification.type === 'success'
+              ? 'bg-green-50 border border-green-200 text-green-800'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
+          <div className='flex items-center'>
+            {notification.type === 'success' ? (
+              <CheckCircle className='h-4 w-4 mr-2' />
+            ) : (
+              <XCircle className='h-4 w-4 mr-2' />
+            )}
+            {notification.message}
+          </div>
         </div>
       )}
 
-      {hasResults && (
-        <div className='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
+      {hasNumber ? (
+        <div className='p-3 mb-6 bg-yellow-50 border border-yellow-200 rounded-md'>
+          <p className='text-yellow-800'>You already have a phone number. You can't purchase another one.</p>
+        </div>
+      ) : (
+        <div className='flex space-x-2 mb-6'>
+          <Input
+            type='text'
+            value={areaCode}
+            onChange={handleAreaCodeChange}
+            maxLength={3}
+            placeholder='Enter Area Code'
+            className='w-32'
+          />
+          <Button
+            onClick={handleButtonClick}
+            disabled={!hasResults && areaCode.length !== 3}
+            className='flex items-center'>
+            {hasResults ? (
+              <>
+                <RotateCw className='mr-2 h-4 w-4' /> Rotate
+              </>
+            ) : (
+              <>
+                <Search className='mr-2 h-4 w-4' /> Search
+              </>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {isLoading && (
+        <div className='space-y-3'>
+          <Skeleton className='h-[100px] w-full rounded-lg' />
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+            <Skeleton className='h-[120px] rounded-lg' />
+            <Skeleton className='h-[120px] rounded-lg' />
+            <Skeleton className='h-[120px] rounded-lg' />
+          </div>
+        </div>
+      )}
+
+      {error && (
+        <div className='p-3 mb-6 bg-destructive/10 border border-destructive/20 rounded-md'>
+          <p className='text-destructive'>Error loading numbers. Please try again.</p>
+        </div>
+      )}
+
+      {numbers && numbers.length === 0 && (
+        <div className='p-3 mb-6 bg-amber-50 border border-amber-200 rounded-md'>
+          <p className='text-amber-800'>No numbers found for area code {areaCode}</p>
+        </div>
+      )}
+
+      {!hasNumber && hasResults && (
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4'>
           {numbers.map((number: PhoneNumber) => (
-            <PhoneNumberCard key={number.friendlyName} number={number} />
+            <PhoneNumberCard
+              key={number.friendlyName}
+              number={number}
+              onPurchaseSuccess={(message) => {
+                setNotification({
+                  message,
+                  type: 'success'
+                })
+              }}
+              onPurchaseError={(message) => {
+                setNotification({
+                  message,
+                  type: 'error'
+                })
+              }}
+            />
           ))}
         </div>
       )}
@@ -95,17 +169,90 @@ export default function NumberMarketplacePage() {
   )
 }
 
-const PhoneNumberCard = ({ number }: { number: PhoneNumber }) => {
+interface PhoneNumberCardProps {
+  number: PhoneNumber
+  onPurchaseSuccess: (message: string) => void
+  onPurchaseError: (message: string) => void
+}
+
+const PhoneNumberCard = ({ number, onPurchaseSuccess, onPurchaseError }: PhoneNumberCardProps) => {
+  const [loading, setLoading] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleGetNumber = async () => {
+    setLoading(true)
+    setError(null)
+    setStatus('idle')
+
+    try {
+      const res = await fetch('/api/twilio/create-incoming-phone-number', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          phoneNumber: number.friendlyName
+        })
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        setStatus('success')
+        onPurchaseSuccess(`Successfully purchased ${number.friendlyName}`)
+      } else {
+        setError(data.message || 'Failed to purchase number')
+        setStatus('error')
+        onPurchaseError(data.message || 'Failed to purchase number')
+      }
+    } catch (error) {
+      setError('An error occurred while purchasing the number')
+      setStatus('error')
+      onPurchaseError('An error occurred while purchasing the number')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <Card>
-      <CardContent className='p-4'>
-        <h2 className='text-lg font-semibold mb-2'>{number.friendlyName}</h2>
-        <p className='text-sm text-gray-600 mb-1'>Region: {number.region}</p>
-        <p className='text-sm text-gray-600 mb-2'>Postal Code: {number.postalCode || 'N/A'}</p>
-        {/* <form action={checkoutAction}>
-          <input type='hidden' name='priceId' value={'prod_Rzd43lIECxvOf7'} />
-          <SubmitButton text='Buy Number' />
-        </form> */}
+    <Card className='overflow-hidden border-muted'>
+      <CardContent className='p-0'>
+        <div className='flex items-center p-3 bg-muted/30'>
+          <Phone className='h-4 w-4 mr-2 text-muted-foreground' />
+          <span className='font-medium'>{number.friendlyName}</span>
+        </div>
+        <div className='p-3 pt-2'>
+          <div className='flex flex-wrap gap-2 mb-3'>
+            <Badge variant='outline' className='text-xs'>
+              {number.region}
+            </Badge>
+            {number.postalCode && (
+              <Badge variant='outline' className='text-xs'>
+                Postal: {number.postalCode}
+              </Badge>
+            )}
+          </div>
+
+          {status === 'success' ? (
+            <div className='flex items-center text-green-600 text-sm p-2 bg-green-50 rounded-md'>
+              <CheckCircle className='h-4 w-4 mr-2' />
+              <span>Number purchased!</span>
+            </div>
+          ) : (
+            <Button size='sm' className='w-full' onClick={handleGetNumber} disabled={loading || status !== 'idle'}>
+              {loading ? <Loader2 className='h-4 w-4 animate-spin mr-2' /> : null}
+              {loading ? 'Processing...' : 'Get Number'}
+            </Button>
+          )}
+
+          {error && (
+            <div className='mt-2 text-destructive text-xs flex items-start'>
+              <XCircle className='h-3 w-3 mr-1 mt-0.5 flex-shrink-0' />
+              <span>{error}</span>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

@@ -1,8 +1,7 @@
 'use client'
 
 import type React from 'react'
-
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +13,30 @@ export default function CallPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
+  const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
+  const [selectedNumber, setSelectedNumber] = useState<string>('')
+
+  useEffect(() => {
+    const fetchUserPhoneNumbers = async () => {
+      try {
+        const response = await fetch('/api/numbers/fetch-user-numbers')
+
+        const data = await response.json()
+
+        const twilioNumbers = data?.data
+
+        if (data.success && data.data.length > 0) {
+          setUserPhoneNumbers(twilioNumbers)
+        } else {
+          setUserPhoneNumbers([])
+        }
+      } catch (err) {
+        console.error('Error fetching phone numbers:', err)
+      }
+    }
+
+    fetchUserPhoneNumbers()
+  }, [])
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -49,6 +72,14 @@ export default function CallPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleNumberChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedNumber(event.target.value)
+  }
+
+  const handleGetNewNumber = () => {
+    router.push('/dashboard/number-marketplace')
   }
 
   return (
@@ -87,19 +118,38 @@ export default function CallPage() {
                 <label htmlFor='number' className='text-sm font-medium'>
                   Phone Number
                 </label>
-                <Input
-                  id='number'
-                  name='number'
-                  placeholder='Enter 10-digit phone number...'
-                  type='tel'
-                  pattern='[0-9]{10}'
-                  title='Please enter a valid 10-digit phone number'
-                  required
-                />
-                <p className='text-sm text-muted-foreground'>Enter a 10-digit phone number without spaces or dashes.</p>
+
+                {userPhoneNumbers.length > 0 ? (
+                  <select
+                    id='number'
+                    name='number'
+                    value={selectedNumber}
+                    onChange={handleNumberChange}
+                    className='w-full p-2 border rounded-md'>
+                    <option value='' disabled>
+                      Select a phone number
+                    </option>
+                    {userPhoneNumbers.map((number) => (
+                      <option key={number} value={number}>
+                        {number}
+                      </option>
+                    ))}
+                  </select>
+                ) : (
+                  <div className='flex justify-between items-center'>
+                    <p className='text-sm text-muted-foreground'>
+                      You don't have any phone numbers. Get one to proceed.
+                    </p>
+                    <Button onClick={handleGetNewNumber} className='ml-4'>
+                      Get Number
+                    </Button>
+                  </div>
+                )}
+
+                <p className='text-sm text-muted-foreground'>Select an existing phone number or get a new one.</p>
               </div>
 
-              <Button type='submit' className='w-full' disabled={isLoading}>
+              <Button type='submit' className='w-full' disabled={isLoading || !selectedNumber}>
                 {isLoading ? 'Initiating Call...' : 'Initiate Call'}
               </Button>
             </form>

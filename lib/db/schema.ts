@@ -23,6 +23,17 @@ export const users = pgTable('users', {
   deletedAt: timestamp('deleted_at')
 })
 
+export const user_numbers = pgTable('user_numbers', {
+  id: serial('id').primaryKey(),
+  user_id: integer('user_id')
+    .notNull()
+    .references(() => users.id),
+  twilio_number: varchar('twilio_number', { length: 20 }).notNull(),
+  status: varchar('status', { length: 50 }).notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull()
+})
+
 export const teams = pgTable('teams', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),

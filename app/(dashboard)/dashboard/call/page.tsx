@@ -16,19 +16,42 @@ export default function CallPage() {
   const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
   const [selectedNumber, setSelectedNumber] = useState<string>('')
   const [toNumber, setToNumber] = useState<string>('')
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null) // Store the access status
+  const [trialing, setTrialing] = useState(false) // To handle trialing status
 
   useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const response = await fetch('/api/stripe/check-subscription')
+        const data = await response.json()
+
+        if (data.error) {
+          setError(data.error)
+          setHasAccess(false)
+        } else {
+          setHasAccess(data.hasAccess)
+          setTrialing(data.trialing || false) // Handle trialing status
+        }
+      } catch (err) {
+        console.error('Error fetching subscription status:', err)
+        setError('Failed to check subscription status.')
+        setHasAccess(false)
+      }
+    }
+
+    fetchSubscriptionStatus()
+  }, [])
+
+  useEffect(() => {
+    // Fetch phone numbers for the user when component mounts
     const fetchUserPhoneNumbers = async () => {
       try {
         const response = await fetch('/api/numbers/fetch-user-numbers')
-
         const data = await response.json()
-
         const twilioNumbers = data?.data
 
         if (data.success && twilioNumbers.length > 0) {
           const cleanedNumbers = twilioNumbers.map((number: any) => number.replace('+1', ''))
-
           setUserPhoneNumbers(cleanedNumbers)
         } else {
           setUserPhoneNumbers([])
@@ -41,13 +64,17 @@ export default function CallPage() {
     fetchUserPhoneNumbers()
   }, [])
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    if (!hasAccess) {
+      setError('You do not have access to initiate a call. Please check your subscription.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
     const formData = new FormData(event.currentTarget)
-
     const callObject = {
       prompt: formData.get('prompt'),
       first_message: formData.get('first_message'),
@@ -90,6 +117,10 @@ export default function CallPage() {
     router.push('/dashboard/number-marketplace')
   }
 
+  if (hasAccess === null) {
+    return <div>Loading...</div> // Show loading state while checking access
+  }
+
   return (
     <div className='flex justify-center'>
       <div className='container max-w-2xl py-10'>
@@ -99,6 +130,23 @@ export default function CallPage() {
             <CardDescription>Fill out the form below to initiate an outbound call.</CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <div className='mt-6 p-4 bg-red-50 text-red-600 rounded-md'>
+                <p className='font-medium'>Error</p>
+                <p>{error}</p>
+              </div>
+            )}
+
+            {!hasAccess && (
+              <div className='mt-6 p-4 bg-yellow-50 text-yellow-600 rounded-md'>
+                <p className='font-medium'>Subscription Issue</p>
+                <p>
+                  Your team does not have access to initiate calls. Please ensure your subscription is active.{' '}
+                  {trialing && <span>(You are currently on a trial.)</span>}
+                </p>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className='space-y-6'>
               <div className='space-y-2'>
                 <label htmlFor='prompt' className='text-sm font-medium'>
@@ -153,8 +201,6 @@ export default function CallPage() {
                     </Button>
                   </div>
                 )}
-
-                <p className='text-sm text-muted-foreground'>Select an existing phone number or get a new one.</p>
               </div>
 
               <div className='space-y-2'>
@@ -172,20 +218,15 @@ export default function CallPage() {
                   placeholder='Enter the phone number to call'
                   required
                 />
-                <p className='text-sm text-muted-foreground'>Enter the 10-digit phone number to call.</p>
               </div>
 
-              <Button type='submit' className='w-full' disabled={isLoading || !selectedNumber || !toNumber}>
+              <Button
+                type='submit'
+                className='w-full'
+                disabled={isLoading || !selectedNumber || !toNumber || !hasAccess}>
                 {isLoading ? 'Initiating Call...' : 'Initiate Call'}
               </Button>
             </form>
-
-            {error && (
-              <div className='mt-6 p-4 bg-red-50 text-red-600 rounded-md'>
-                <p className='font-medium'>Error</p>
-                <p>{error}</p>
-              </div>
-            )}
 
             {result && (
               <div className='mt-6'>

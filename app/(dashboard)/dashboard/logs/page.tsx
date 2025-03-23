@@ -121,7 +121,7 @@ function formatDuration(seconds: number) {
 }
 
 export default function CallLogs() {
-  const { data, error, isLoading } = useSWR<{ success: boolean; calls: CallLog[] }>('/api/call-logs', fetcher)
+  const { data, error, isLoading } = useSWR<{ success: boolean; calls: CallLog[] }>('/api/twilio/calls', fetcher)
 
   // Loading state with skeletons for better UX
   if (isLoading) {

@@ -9,14 +9,15 @@ import { Loader2, RotateCw, Search } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { fetcher } from '@/utils'
 import type { PhoneNumber } from '@/types'
+// import { SubmitButton } from '@/app/(dashboard)/pricing/submit-button'
+// import { checkoutAction } from '@/lib/payments/actions'
 
 export default function NumberMarketplacePage() {
   const [areaCode, setAreaCode] = useState<string>('')
   const [shouldFetch, setShouldFetch] = useState<boolean>(false)
-  const [rotateKey, setRotateKey] = useState<number>(0)
 
   const { data, error, isLoading, mutate } = useSWR(
-    shouldFetch ? `/api/twilio/available-phone-numbers?areaCode=${areaCode}&key=${rotateKey}` : null,
+    shouldFetch ? `/api/twilio/available-phone-numbers?areaCode=${areaCode}` : null,
     fetcher
   )
 
@@ -34,7 +35,6 @@ export default function NumberMarketplacePage() {
   }
 
   const handleRotate = () => {
-    setRotateKey((prevKey) => prevKey + 1)
     mutate()
   }
 
@@ -95,13 +95,17 @@ export default function NumberMarketplacePage() {
   )
 }
 
-function PhoneNumberCard({ number }: { number: PhoneNumber }) {
+const PhoneNumberCard = ({ number }: { number: PhoneNumber }) => {
   return (
     <Card>
       <CardContent className='p-4'>
         <h2 className='text-lg font-semibold mb-2'>{number.friendlyName}</h2>
         <p className='text-sm text-gray-600 mb-1'>Region: {number.region}</p>
         <p className='text-sm text-gray-600 mb-2'>Postal Code: {number.postalCode || 'N/A'}</p>
+        {/* <form action={checkoutAction}>
+          <input type='hidden' name='priceId' value={'prod_Rzd43lIECxvOf7'} />
+          <SubmitButton text='Buy Number' />
+        </form> */}
       </CardContent>
     </Card>
   )

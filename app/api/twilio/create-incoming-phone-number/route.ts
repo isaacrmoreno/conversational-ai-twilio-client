@@ -17,8 +17,6 @@ export async function GET(req: NextRequest) {
       phoneNumber: phoneNumber
     })
 
-    console.log('response', response)
-
     return NextResponse.json({ success: true, data: response })
   } catch (error) {
     console.error('Error fetching calls:', error)

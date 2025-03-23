@@ -9,30 +9,40 @@ export const revalidate = 3600
 export default async function PricingPage() {
   const [prices, products] = await Promise.all([getStripePrices(), getStripeProducts()])
 
-  const basePlan = products.find((product) => product.name === 'Base')
-  const plusPlan = products.find((product) => product.name === 'Plus')
+  const creatorPlan = products.find((product) => product.name === 'Creator')
+  const proPlan = products.find((product) => product.name === 'Pro')
+  const scalePlan = products.find((product) => product.name === 'Scale')
 
-  const basePrice = prices.find((price) => price.productId === basePlan?.id)
-  const plusPrice = prices.find((price) => price.productId === plusPlan?.id)
+  const creatorPrice = prices.find((price) => price.productId === creatorPlan?.id)
+  const proPrice = prices.find((price) => price.productId === proPlan?.id)
+  const scalePrice = prices.find((price) => price.productId === scalePlan?.id)
 
   return (
     <main className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
-      <div className='grid md:grid-cols-2 gap-8 max-w-xl mx-auto'>
+      <div className='grid md:grid-cols-3 gap-8 max-w-xl mx-auto'>
         <PricingCard
-          name={basePlan?.name || 'Base'}
-          price={basePrice?.unitAmount || 800}
-          interval={basePrice?.interval || 'month'}
-          trialDays={basePrice?.trialPeriodDays || 7}
-          features={['Unlimited Usage', 'Unlimited Workspace Members', 'Email Support']}
-          priceId={basePrice?.id}
+          name={creatorPlan?.name || 'Creator'}
+          price={creatorPrice?.unitAmount || 2200} // Doubled to $22
+          interval={creatorPrice?.interval || 'month'}
+          trialDays={creatorPrice?.trialPeriodDays || 7}
+          features={['250 minutes included', 'Priority support']}
+          priceId={creatorPrice?.id}
         />
         <PricingCard
-          name={plusPlan?.name || 'Plus'}
-          price={plusPrice?.unitAmount || 1200}
-          interval={plusPrice?.interval || 'month'}
-          trialDays={plusPrice?.trialPeriodDays || 7}
-          features={['Everything in Base, and:', 'Early Access to New Features', '24/7 Support + Slack Access']}
-          priceId={plusPrice?.id}
+          name={proPlan?.name || 'Pro'}
+          price={proPrice?.unitAmount || 19800} // Doubled to $198
+          interval={proPrice?.interval || 'month'}
+          trialDays={proPrice?.trialPeriodDays || 7}
+          features={['1,100 minutes included', 'Priority support']}
+          priceId={proPrice?.id}
+        />
+        <PricingCard
+          name={scalePlan?.name || 'Scale'}
+          price={scalePrice?.unitAmount || 66000} // Doubled to $660
+          interval={scalePrice?.interval || 'month'}
+          trialDays={scalePrice?.trialPeriodDays || 7}
+          features={['3,600 minutes included', 'Dedicated support']}
+          priceId={scalePrice?.id}
         />
       </div>
     </main>

@@ -1,18 +1,19 @@
-'use client'
-
 import { useState } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Clock, MessageSquare, Phone } from 'lucide-react'
 
-export default function ConversationsPage() {
-  const [agentId, setAgentId] = useState('DscGwQp86RNwSIoKkssa')
+interface ConversationsPageProps {
+  agentId: string
+}
+
+export default function Conversations({ agentId }: ConversationsPageProps) {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
   const { data, error, isLoading } = useSWR(`/api/conversations/list-conversations?agent_id=${agentId}`, fetcher)
+
   const {
     data: conversationData,
     error: conversationError,
@@ -48,13 +49,6 @@ export default function ConversationsPage() {
         </Card>
       )}
 
-      <Input
-        type='text'
-        value={agentId}
-        onChange={(e) => setAgentId(e.target.value)}
-        placeholder='Enter agent ID'
-        className='mb-4'
-      />
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
         {isLoading
           ? Array(6)

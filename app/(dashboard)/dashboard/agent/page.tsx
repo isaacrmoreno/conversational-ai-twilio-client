@@ -1,39 +1,40 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import useSWR from 'swr'
-import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
 import { fetcher } from '@/utils'
+import ConversationsPage from '@/components/Conversations' // Import the ConversationsPage component
 
 export default function AgentPage() {
   const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
-
   const agents = data?.data
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
 
   const [isLoading, setIsLoading] = useState(false)
   const [agentCreated, setAgentCreated] = useState(false)
   const [agentName, setAgentName] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null) // New state to track access
+  // const [error, setError] = useState<string | null>(null)
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
 
-  // Fetch the subscription status of the user
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
       try {
-        const response = await fetch('/api/stripe/check-subscription') // Assuming the API is set up
+        const response = await fetch('/api/stripe/check-subscription')
         const data = await response.json()
 
         if (data.error) {
-          setErrorMessage(data.error)
+          // setError(data.error)
           setHasAccess(false)
         } else {
           setHasAccess(data.hasAccess)
         }
       } catch (err) {
         console.error('Error fetching subscription status:', err)
-        setErrorMessage('Failed to check subscription status.')
+        // setError('Failed to check subscription status.')
         setHasAccess(false)
       }
     }
@@ -103,10 +104,7 @@ export default function AgentPage() {
             onChange={(e) => setAgentName(e.target.value)}
             className='mr-4 p-2 border rounded'
           />
-          <Button
-            onClick={createAgent}
-            disabled={isLoading || !hasAccess} // Disable if no access
-          >
+          <Button onClick={createAgent} disabled={isLoading || !hasAccess}>
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -156,7 +154,11 @@ export default function AgentPage() {
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {agents.map((agent: any) => (
-            <Card key={agent.agent_id} className='overflow-hidden'>
+            <Card
+              key={agent.agent_id}
+              className='overflow-hidden'
+              onClick={() => setSelectedAgentId(agent.agent_id)} // Set the selected agent when clicked
+            >
               <CardHeader className='pb-3'>
                 <div className='flex justify-between items-start'>
                   <CardTitle className='text-lg'>{agent.name}</CardTitle>
@@ -180,12 +182,7 @@ export default function AgentPage() {
         </div>
       )}
 
-      {/* Message if user is not subscribed */}
-      {!hasAccess && (
-        <div className='p-4 mt-6 bg-yellow-50 border border-yellow-200 rounded-md'>
-          <p className='text-yellow-800'>You need to be subscribed to create agents.</p>
-        </div>
-      )}
+      {selectedAgentId && <ConversationsPage agentId={selectedAgentId} />}
     </div>
   )
 }

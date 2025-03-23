@@ -12,7 +12,7 @@ export async function GET(req: Request) {
 
     const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY })
     const response = await client.conversationalAi.getConversations({
-      agent_id: 'DscGwQp86RNwSIoKkssa',
+      agent_id: agent_id,
       call_successful: 'success',
       page_size: 30
     })

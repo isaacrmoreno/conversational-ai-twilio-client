@@ -16,9 +16,12 @@ export default function CallPage() {
   const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
   const [selectedNumber, setSelectedNumber] = useState<string>('')
   const [toNumber, setToNumber] = useState<string>('')
+  const [selectedAgent, setSelectedAgent] = useState<string>('') // New state for agent selection
+  const [agents, setAgents] = useState<any[]>([]) // State to hold the list of agents
   const [hasAccess, setHasAccess] = useState<boolean | null>(null) // Store the access status
   const [trialing, setTrialing] = useState(false) // To handle trialing status
 
+  // Fetch the subscription and agents info
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
       try {
@@ -39,7 +42,22 @@ export default function CallPage() {
       }
     }
 
+    const fetchAgents = async () => {
+      try {
+        const response = await fetch('/api/agents/list-agents') // API to fetch agents
+        const data = await response.json()
+
+        if (data.success && data.data) {
+          setAgents(data.data) // Set the list of agents
+        }
+      } catch (err) {
+        console.error('Error fetching agents:', err)
+        setError('Failed to load agents.')
+      }
+    }
+
     fetchSubscriptionStatus()
+    fetchAgents()
   }, [])
 
   useEffect(() => {
@@ -71,6 +89,11 @@ export default function CallPage() {
       return
     }
 
+    if (!selectedAgent) {
+      setError('Please select an agent for the call.')
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -79,7 +102,8 @@ export default function CallPage() {
       prompt: formData.get('prompt'),
       first_message: formData.get('first_message'),
       from: selectedNumber,
-      to: toNumber
+      to: toNumber,
+      agent_id: selectedAgent // Add agent_id to the call object
     }
 
     try {
@@ -111,6 +135,10 @@ export default function CallPage() {
 
   const handleToNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setToNumber(event.target.value)
+  }
+
+  const handleAgentChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedAgent(event.target.value) // Update the selected agent
   }
 
   const handleGetNewNumber = () => {
@@ -171,6 +199,28 @@ export default function CallPage() {
               </div>
 
               <div className='space-y-2'>
+                <label htmlFor='agent' className='text-sm font-medium'>
+                  Select Agent
+                </label>
+                <select
+                  id='agent'
+                  name='agent'
+                  value={selectedAgent}
+                  onChange={handleAgentChange}
+                  className='w-full p-2 border rounded-md'
+                  required>
+                  <option value='' disabled>
+                    Select an agent
+                  </option>
+                  {agents.map((agent) => (
+                    <option key={agent.agent_id} value={agent.agent_id}>
+                      {agent.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className='space-y-2'>
                 <label htmlFor='fromNumber' className='text-sm font-medium'>
                   From Number (Select your number)
                 </label>
@@ -223,7 +273,7 @@ export default function CallPage() {
               <Button
                 type='submit'
                 className='w-full'
-                disabled={isLoading || !selectedNumber || !toNumber || !hasAccess}>
+                disabled={isLoading || !selectedNumber || !toNumber || !selectedAgent || !hasAccess}>
                 {isLoading ? 'Initiating Call...' : 'Initiate Call'}
               </Button>
             </form>

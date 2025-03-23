@@ -32,12 +32,10 @@ export async function GET() {
 
     const { subscriptionStatus } = team[0]
 
-    console.log('subscriptionStatus', subscriptionStatus)
-
     if (subscriptionStatus === 'active') {
       return NextResponse.json({ hasAccess: true })
     } else if (subscriptionStatus === 'trialing') {
-      return NextResponse.json({ hasAccess: false, trialing: true })
+      return NextResponse.json({ hasAccess: true, trialing: true })
     } else {
       return NextResponse.json({ hasAccess: false })
     }

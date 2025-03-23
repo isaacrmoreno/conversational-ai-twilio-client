@@ -1,7 +1,7 @@
 'use client'
 
 import useSWR from 'swr'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
@@ -16,6 +16,30 @@ export default function AgentPage() {
   const [agentCreated, setAgentCreated] = useState(false)
   const [agentName, setAgentName] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null) // New state to track access
+
+  // Fetch the subscription status of the user
+  useEffect(() => {
+    const fetchSubscriptionStatus = async () => {
+      try {
+        const response = await fetch('/api/stripe/check-subscription') // Assuming the API is set up
+        const data = await response.json()
+
+        if (data.error) {
+          setErrorMessage(data.error)
+          setHasAccess(false)
+        } else {
+          setHasAccess(data.hasAccess)
+        }
+      } catch (err) {
+        console.error('Error fetching subscription status:', err)
+        setErrorMessage('Failed to check subscription status.')
+        setHasAccess(false)
+      }
+    }
+
+    fetchSubscriptionStatus()
+  }, [])
 
   const createAgent = async () => {
     if (!agentName.trim()) {
@@ -62,6 +86,11 @@ export default function AgentPage() {
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
 
+  // Early return to prevent rendering before subscription status is loaded
+  if (hasAccess === null) {
+    return <div>Loading subscription status...</div>
+  }
+
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
@@ -74,7 +103,10 @@ export default function AgentPage() {
             onChange={(e) => setAgentName(e.target.value)}
             className='mr-4 p-2 border rounded'
           />
-          <Button onClick={createAgent} disabled={isLoading}>
+          <Button
+            onClick={createAgent}
+            disabled={isLoading || !hasAccess} // Disable if no access
+          >
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -145,6 +177,13 @@ export default function AgentPage() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Message if user is not subscribed */}
+      {!hasAccess && (
+        <div className='p-4 mt-6 bg-yellow-50 border border-yellow-200 rounded-md'>
+          <p className='text-yellow-800'>You need to be subscribed to create agents.</p>
         </div>
       )}
     </div>

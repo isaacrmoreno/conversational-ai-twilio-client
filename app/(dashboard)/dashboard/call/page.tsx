@@ -15,6 +15,7 @@ export default function CallPage() {
   const [error, setError] = useState<string | null>(null)
   const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
   const [selectedNumber, setSelectedNumber] = useState<string>('')
+  const [toNumber, setToNumber] = useState<string>('')
 
   useEffect(() => {
     const fetchUserPhoneNumbers = async () => {
@@ -25,8 +26,10 @@ export default function CallPage() {
 
         const twilioNumbers = data?.data
 
-        if (data.success && data.data.length > 0) {
-          setUserPhoneNumbers(twilioNumbers)
+        if (data.success && twilioNumbers.length > 0) {
+          const cleanedNumbers = twilioNumbers.map((number: any) => number.replace('+1', ''))
+
+          setUserPhoneNumbers(cleanedNumbers)
         } else {
           setUserPhoneNumbers([])
         }
@@ -48,7 +51,8 @@ export default function CallPage() {
     const callObject = {
       prompt: formData.get('prompt'),
       first_message: formData.get('first_message'),
-      number: formData.get('number')
+      from: selectedNumber,
+      to: toNumber
     }
 
     try {
@@ -76,6 +80,10 @@ export default function CallPage() {
 
   const handleNumberChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedNumber(event.target.value)
+  }
+
+  const handleToNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setToNumber(event.target.value)
   }
 
   const handleGetNewNumber = () => {
@@ -115,14 +123,14 @@ export default function CallPage() {
               </div>
 
               <div className='space-y-2'>
-                <label htmlFor='number' className='text-sm font-medium'>
-                  Phone Number
+                <label htmlFor='fromNumber' className='text-sm font-medium'>
+                  From Number (Select your number)
                 </label>
 
                 {userPhoneNumbers.length > 0 ? (
                   <select
-                    id='number'
-                    name='number'
+                    id='fromNumber'
+                    name='fromNumber'
                     value={selectedNumber}
                     onChange={handleNumberChange}
                     className='w-full p-2 border rounded-md'>
@@ -149,7 +157,25 @@ export default function CallPage() {
                 <p className='text-sm text-muted-foreground'>Select an existing phone number or get a new one.</p>
               </div>
 
-              <Button type='submit' className='w-full' disabled={isLoading || !selectedNumber}>
+              <div className='space-y-2'>
+                <label htmlFor='toNumber' className='text-sm font-medium'>
+                  To Number (Enter the number you want to call)
+                </label>
+                <Input
+                  id='toNumber'
+                  name='toNumber'
+                  type='tel'
+                  pattern='[0-9]{10}'
+                  title='Please enter a valid 10-digit phone number'
+                  value={toNumber}
+                  onChange={handleToNumberChange}
+                  placeholder='Enter the phone number to call'
+                  required
+                />
+                <p className='text-sm text-muted-foreground'>Enter the 10-digit phone number to call.</p>
+              </div>
+
+              <Button type='submit' className='w-full' disabled={isLoading || !selectedNumber || !toNumber}>
                 {isLoading ? 'Initiating Call...' : 'Initiate Call'}
               </Button>
             </form>

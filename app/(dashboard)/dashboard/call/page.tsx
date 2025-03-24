@@ -103,7 +103,7 @@ export default function CallPage() {
       first_message: formData.get('first_message'),
       from: selectedNumber,
       to: toNumber,
-      agent_id: selectedAgent // Add agent_id to the call object
+      agent_id: selectedAgent
     }
 
     try {
@@ -184,6 +184,9 @@ export default function CallPage() {
                   id='prompt'
                   name='prompt'
                   placeholder='Enter call instructions...'
+                  defaultValue={
+                    'You are an AI assistant calling on behalf of a real estate agent to gauge how serious a lead is about selling their home and gather details on their selling goals.'
+                  }
                   className='min-h-[100px]'
                   required
                 />
@@ -194,7 +197,15 @@ export default function CallPage() {
                 <label htmlFor='first_message' className='text-sm font-medium'>
                   First Message
                 </label>
-                <Input id='first_message' name='first_message' placeholder='Enter first message...' required />
+                <Input
+                  id='first_message'
+                  name='first_message'
+                  placeholder='Enter first message...'
+                  required
+                  defaultValue={
+                    'Hello, this is an AI assistant calling on behalf of [Real Estate Agent’s Name]. I’m reaching out because you inquired about selling your home. Can you share what price you’re hoping to sell for?'
+                  }
+                />
                 <p className='text-sm text-muted-foreground'>The initial message to send.</p>
               </div>
 

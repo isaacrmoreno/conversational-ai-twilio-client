@@ -24,7 +24,7 @@ export default async function PricingPage() {
           name={creatorPlan?.name || 'Creator'}
           price={creatorPrice?.unitAmount || 2200} // Doubled to $22
           interval={creatorPrice?.interval || 'month'}
-          trialDays={creatorPrice?.trialPeriodDays || 7}
+          // trialDays={creatorPrice?.trialPeriodDays || 7}
           features={['250 minutes included', 'Priority support']}
           priceId={creatorPrice?.id}
         />
@@ -32,7 +32,7 @@ export default async function PricingPage() {
           name={proPlan?.name || 'Pro'}
           price={proPrice?.unitAmount || 19800} // Doubled to $198
           interval={proPrice?.interval || 'month'}
-          trialDays={proPrice?.trialPeriodDays || 7}
+          // trialDays={proPrice?.trialPeriodDays || 7}
           features={['1,100 minutes included', 'Priority support']}
           priceId={proPrice?.id}
         />
@@ -40,7 +40,7 @@ export default async function PricingPage() {
           name={scalePlan?.name || 'Scale'}
           price={scalePrice?.unitAmount || 66000} // Doubled to $660
           interval={scalePrice?.interval || 'month'}
-          trialDays={scalePrice?.trialPeriodDays || 7}
+          // trialDays={scalePrice?.trialPeriodDays || 7}
           features={['3,600 minutes included', 'Dedicated support']}
           priceId={scalePrice?.id}
         />
@@ -53,21 +53,21 @@ function PricingCard({
   name,
   price,
   interval,
-  trialDays,
+  // trialDays,
   features,
   priceId
 }: {
   name: string
   price: number
   interval: string
-  trialDays: number
+  // trialDays: number
   features: string[]
   priceId?: string
 }) {
   return (
     <div className='pt-6'>
       <h2 className='text-2xl font-medium text-gray-900 mb-2'>{name}</h2>
-      <p className='text-sm text-gray-600 mb-4'>with {trialDays} day free trial</p>
+      {/* <p className='text-sm text-gray-600 mb-4'>with {trialDays} day free trial</p> */}
       <p className='text-4xl font-medium text-gray-900 mb-6'>
         ${price / 100} <span className='text-xl font-normal text-gray-600'>per user / {interval}</span>
       </p>

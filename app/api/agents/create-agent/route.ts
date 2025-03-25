@@ -76,6 +76,16 @@ export async function POST(req: NextRequest) {
           enable_auth: true,
           allowlist: [],
           shareable_token: ''
+        },
+        overrides: {
+          conversation_config_override: {
+            agent: {
+              prompt: {
+                prompt: true
+              },
+              first_message: true
+            }
+          }
         }
       },
       name: name

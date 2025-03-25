@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
 import { fetcher } from '@/utils'
-import ConversationsPage from '@/components/Conversations' // Import the ConversationsPage component
+import ConversationsPage from '@/components/Conversations'
 
 export default function AgentPage() {
   const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
@@ -17,7 +17,6 @@ export default function AgentPage() {
   const [agentCreated, setAgentCreated] = useState(false)
   const [agentName, setAgentName] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  // const [error, setError] = useState<string | null>(null)
   const [hasAccess, setHasAccess] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -87,7 +86,6 @@ export default function AgentPage() {
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
 
-  // Early return to prevent rendering before subscription status is loaded
   if (hasAccess === null) {
     return <div>Loading subscription status...</div>
   }
@@ -154,16 +152,12 @@ export default function AgentPage() {
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {agents.map((agent: any) => (
-            <Card
-              key={agent.agent_id}
-              className='overflow-hidden'
-              onClick={() => setSelectedAgentId(agent.agent_id)} // Set the selected agent when clicked
-            >
-              <CardHeader className='pb-3'>
+            <Card key={agent.agent_id} className='overflow-hidden' onClick={() => setSelectedAgentId(agent.agent_id)}>
+              <CardHeader className='pb-2'>
                 <div className='flex justify-between items-start'>
                   <CardTitle className='text-lg'>{agent.name}</CardTitle>
                 </div>
-                <CardDescription>ID: {agent.agent_id.substring(0, 8)}...</CardDescription>
+                <CardDescription>ID: {agent.agent_id}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className='space-y-2 text-sm'>

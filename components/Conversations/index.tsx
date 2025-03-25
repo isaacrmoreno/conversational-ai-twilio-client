@@ -1,12 +1,27 @@
+'use client'
+
 import { useState } from 'react'
 import useSWR from 'swr'
 import { fetcher } from '@/utils'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Clock, MessageSquare, Phone } from 'lucide-react'
+import { MessageSquare, Clock } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
 interface ConversationsPageProps {
   agentId: string
+}
+
+interface Conversation {
+  agent_id: string
+  agent_name: string
+  conversation_id: string
+  start_time_unix_secs: number
+  call_duration_secs: number
+  message_count: number
+  status: string
+  call_successful: string
 }
 
 export default function Conversations({ agentId }: ConversationsPageProps) {
@@ -30,50 +45,78 @@ export default function Conversations({ agentId }: ConversationsPageProps) {
   if (error) return <div className='text-red-500'>Failed to load conversations</div>
   if (conversationError) return <div className='text-red-500'>Failed to load conversation details</div>
 
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60)
+    const remainingSeconds = seconds % 60
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
+  }
+
+  const formatDate = (timestamp: number) => {
+    const date = new Date(timestamp * 1000)
+    return date.toLocaleString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: true
+    })
+  }
+
   return (
     <div className='container mx-auto p-4'>
       <h1 className='text-2xl font-bold mb-4'>Conversations</h1>
 
-      {selectedConversationId && (
+      {selectedConversationId && conversationData?.data?.analysis?.transcript_summary && (
         <Card className='my-4'>
-          <CardHeader>
-            <CardTitle>Transcript Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isConversationLoading ? (
-              <Skeleton className='h-[100px] w-full' />
-            ) : (
-              <p>{conversationData?.data?.analysis?.transcript_summary}</p>
-            )}
+          <CardContent className='p-4'>
+            <p>{conversationData.data.analysis.transcript_summary}</p>
           </CardContent>
         </Card>
       )}
 
-      <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
+      <div className='space-y-2'>
         {isLoading
-          ? Array(6)
+          ? Array(3)
               .fill(0)
-              .map((_, i) => <Skeleton key={i} className='h-[200px] w-full' />)
-          : conversations?.map((conversation: any) => (
+              .map((_, i) => <Skeleton key={i} className='h-[60px] w-full' />)
+          : conversations.map((conversation: Conversation) => (
               <Card
                 key={conversation.conversation_id}
-                className='cursor-pointer hover:shadow-lg transition-shadow'
+                className={cn(
+                  'cursor-pointer hover:bg-accent transition-colors',
+                  selectedConversationId === conversation.conversation_id ? 'border-primary' : ''
+                )}
                 onClick={() => setSelectedConversationId(conversation.conversation_id)}>
-                <CardHeader>
-                  <CardTitle>{conversation.agent_name}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground mb-2'>
-                    <Clock className='h-4 w-4' />
-                    {new Date(conversation.start_time_unix_secs * 1000).toLocaleString()}
+                <CardContent className='p-3 flex items-center justify-between'>
+                  <div className='flex items-center gap-3'>
+                    <div className='bg-muted rounded-md p-2'>
+                      <MessageSquare className='h-5 w-5 text-muted-foreground' />
+                    </div>
+                    <div>
+                      <p className='text-sm font-medium'>Today, {formatDate(conversation.start_time_unix_secs)}</p>
+                    </div>
                   </div>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground mb-2'>
-                    <Phone className='h-4 w-4' />
-                    {conversation.call_duration_secs} seconds
-                  </div>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                    <MessageSquare className='h-4 w-4' />
-                    {conversation.message_count} messages
+
+                  <div className='flex items-center gap-4'>
+                    <Badge variant='outline' className='bg-background'>
+                      {conversation.agent_name}
+                    </Badge>
+
+                    <div className='flex items-center gap-1'>
+                      <MessageSquare className='h-4 w-4 text-muted-foreground' />
+                      <span className='text-sm text-muted-foreground'>{conversation.message_count}</span>
+                    </div>
+
+                    <div className='flex items-center gap-1'>
+                      <Clock className='h-4 w-4 text-muted-foreground' />
+                      <span className='text-sm text-muted-foreground'>
+                        {formatTime(conversation.call_duration_secs)}
+                      </span>
+                    </div>
+
+                    <Badge
+                      variant={conversation.call_successful === 'success' ? 'default' : 'destructive'}
+                      className='ml-2'>
+                      {conversation.call_successful === 'success' ? 'Success' : 'Failed'}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>

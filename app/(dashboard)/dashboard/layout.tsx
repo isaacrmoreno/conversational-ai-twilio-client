@@ -14,7 +14,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard', icon: Users, label: 'Team' },
     { href: '/dashboard/number-marketplace', icon: Phone, label: 'Number Marketplace' },
     { href: '/dashboard/call', icon: Phone, label: 'Call' },
-    { href: '/dashboard/logs', icon: Logs, label: 'Logs' },
     { href: '/dashboard/agent', icon: Bot, label: 'agent' },
     { href: '/dashboard/general', icon: Settings, label: 'General' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },

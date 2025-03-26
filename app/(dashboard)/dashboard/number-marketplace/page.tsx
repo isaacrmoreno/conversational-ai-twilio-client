@@ -68,8 +68,8 @@ export default function NumberMarketplacePage() {
   }, [])
 
   return (
-    <div className='max-w-5xl mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Number Marketplace</h1>
+    <section className='flex-1 p-4 lg:p-8'>
+      <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Number Marketplace</h1>
 
       {notification && (
         <div
@@ -165,7 +165,7 @@ export default function NumberMarketplacePage() {
           ))}
         </div>
       )}
-    </div>
+    </section>
   )
 }
 

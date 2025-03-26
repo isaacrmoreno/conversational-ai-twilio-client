@@ -60,31 +60,30 @@ export default function AgentPage() {
   }
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold cursor-default'>Agent Management</h1>
-        <div className='flex items-center'>
-          <input
-            type='text'
-            placeholder='Enter agent name'
-            value={agentName}
-            onChange={(e) => setAgentName(e.target.value)}
-            className='mr-4 p-2 border rounded'
-          />
-          <Button onClick={createAgent} disabled={isLoading || !subscriptionData?.hasAccess} className='cursor-pointer'>
-            {isLoading ? (
-              <>
-                <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                Creating...
-              </>
-            ) : (
-              <>
-                <Plus className='h-4 w-4 mr-2' />
-                Create Agent
-              </>
-            )}
-          </Button>
-        </div>
+    <section className='flex-1 p-4 lg:p-8'>
+      <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Agent Management</h1>
+
+      <div className='flex items-center'>
+        <input
+          type='text'
+          placeholder='Enter agent name'
+          value={agentName}
+          onChange={(e) => setAgentName(e.target.value)}
+          className='mr-4 p-2 border rounded'
+        />
+        <Button onClick={createAgent} disabled={isLoading || !subscriptionData?.hasAccess} className='cursor-pointer'>
+          {isLoading ? (
+            <>
+              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+              Creating...
+            </>
+          ) : (
+            <>
+              <Plus className='h-4 w-4 mr-2' />
+              Create Agent
+            </>
+          )}
+        </Button>
       </div>
 
       {errorMessage && (
@@ -119,7 +118,7 @@ export default function AgentPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6'>
           {agents.map((agent: any) => (
             <Card
               key={agent.agent_id}
@@ -147,6 +146,6 @@ export default function AgentPage() {
           ))}
         </div>
       )}
-    </div>
+    </section>
   )
 }

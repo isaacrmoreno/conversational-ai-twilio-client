@@ -22,10 +22,8 @@ export default function AgentPage() {
   }
 
   return (
-    <div className='container mx-auto py-10'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold cursor-default'>Call History</h1>
-      </div>
+    <section className='flex-1 p-4 lg:p-8'>
+      <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Call History</h1>
 
       {error && (
         <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
@@ -73,6 +71,6 @@ export default function AgentPage() {
       )}
 
       {selectedAgentId && <ConversationsPage agentId={selectedAgentId} />}
-    </div>
+    </section>
   )
 }

@@ -93,7 +93,7 @@ export default function AgentPage() {
   return (
     <div className='container mx-auto py-10'>
       <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-2xl font-bold'>Agent Management</h1>
+        <h1 className='text-2xl font-bold cursor-default'>Agent Management</h1>
         <div className='flex items-center'>
           <input
             type='text'
@@ -102,7 +102,7 @@ export default function AgentPage() {
             onChange={(e) => setAgentName(e.target.value)}
             className='mr-4 p-2 border rounded'
           />
-          <Button onClick={createAgent} disabled={isLoading || !hasAccess}>
+          <Button onClick={createAgent} disabled={isLoading || !hasAccess} className='cursor-pointer'>
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -152,7 +152,10 @@ export default function AgentPage() {
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {agents.map((agent: any) => (
-            <Card key={agent.agent_id} className='overflow-hidden' onClick={() => setSelectedAgentId(agent.agent_id)}>
+            <Card
+              key={agent.agent_id}
+              className='overflow-hidden cursor-default'
+              onClick={() => setSelectedAgentId(agent.agent_id)}>
               <CardHeader className='pb-2'>
                 <div className='flex justify-between items-start'>
                   <CardTitle className='text-lg'>{agent.name}</CardTitle>

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { MessageSquare, Clock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 
 interface ConversationsPageProps {
   agentId: string
@@ -62,11 +63,11 @@ export default function Conversations({ agentId }: ConversationsPageProps) {
 
   return (
     <div className='container mx-auto p-4'>
-      <h1 className='text-2xl font-bold mb-4'>Conversations</h1>
+      <h1 className='text-2xl font-bold mb-4 cursor-default'>Conversations</h1>
 
       {selectedConversationId && conversationData?.data?.analysis?.transcript_summary && (
         <Card className='my-4'>
-          <CardContent className='p-4'>
+          <CardContent className='p-4 cursor-default'>
             <p>{conversationData.data.analysis.transcript_summary}</p>
           </CardContent>
         </Card>
@@ -96,27 +97,63 @@ export default function Conversations({ agentId }: ConversationsPageProps) {
                   </div>
 
                   <div className='flex items-center gap-4'>
-                    <Badge variant='outline' className='bg-background'>
-                      {conversation.agent_name}
-                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant='outline' className='bg-background cursor-pointer'>
+                            {conversation.agent_name}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Agent name: {conversation.agent_name}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                    <div className='flex items-center gap-1'>
-                      <MessageSquare className='h-4 w-4 text-muted-foreground' />
-                      <span className='text-sm text-muted-foreground'>{conversation.message_count}</span>
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className='flex items-center gap-1'>
+                            <MessageSquare className='h-4 w-4 text-muted-foreground' />
+                            <span className='text-sm text-muted-foreground'>{conversation.message_count}</span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Message count: {conversation.message_count}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                    <div className='flex items-center gap-1'>
-                      <Clock className='h-4 w-4 text-muted-foreground' />
-                      <span className='text-sm text-muted-foreground'>
-                        {formatTime(conversation.call_duration_secs)}
-                      </span>
-                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className='flex items-center gap-1'>
+                            <Clock className='h-4 w-4 text-muted-foreground' />
+                            <span className='text-sm text-muted-foreground'>
+                              {formatTime(conversation.call_duration_secs)}
+                            </span>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Call duration in seconds: {formatTime(conversation.call_duration_secs)}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
 
-                    <Badge
-                      variant={conversation.call_successful === 'success' ? 'default' : 'destructive'}
-                      className='ml-2'>
-                      {conversation.call_successful === 'success' ? 'Success' : 'Failed'}
-                    </Badge>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge
+                            variant={conversation.call_successful === 'success' ? 'default' : 'destructive'}
+                            className='ml-2'>
+                            {conversation.call_successful === 'success' ? 'Success' : 'Failed'}
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Evaluation result: {conversation.call_successful === 'success' ? 'Success' : 'Failed'}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </CardContent>
               </Card>

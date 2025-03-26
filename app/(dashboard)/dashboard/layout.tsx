@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { Users, Settings, Shield, Activity, Menu, Bot, Phone, Logs } from 'lucide-react'
+import { Users, Settings, Shield, Activity, Menu, Bot, Phone, MessageSquare } from 'lucide-react'
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
@@ -14,6 +14,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { href: '/dashboard', icon: Users, label: 'Team' },
     { href: '/dashboard/number-marketplace', icon: Phone, label: 'Number Marketplace' },
     { href: '/dashboard/call', icon: Phone, label: 'Call' },
+    { href: '/dashboard/call-history', icon: MessageSquare, label: 'Call History' },
     { href: '/dashboard/agent', icon: Bot, label: 'agent' },
     { href: '/dashboard/general', icon: Settings, label: 'General' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },

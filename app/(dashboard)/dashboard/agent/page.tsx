@@ -1,15 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
-import { fetcher } from '@/utils'
-import ConversationsPage from '@/components/Conversations'
+import { fetcher, formatDate } from '@/utils'
 
 export default function AgentPage() {
   const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
+  const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
+
   const agents = data?.data
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
 
@@ -17,29 +18,6 @@ export default function AgentPage() {
   const [agentCreated, setAgentCreated] = useState(false)
   const [agentName, setAgentName] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    const fetchSubscriptionStatus = async () => {
-      try {
-        const response = await fetch('/api/stripe/check-subscription')
-        const data = await response.json()
-
-        if (data.error) {
-          // setError(data.error)
-          setHasAccess(false)
-        } else {
-          setHasAccess(data.hasAccess)
-        }
-      } catch (err) {
-        console.error('Error fetching subscription status:', err)
-        // setError('Failed to check subscription status.')
-        setHasAccess(false)
-      }
-    }
-
-    fetchSubscriptionStatus()
-  }, [])
 
   const createAgent = async () => {
     if (!agentName.trim()) {
@@ -74,19 +52,10 @@ export default function AgentPage() {
     }
   }
 
-  const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
-
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
 
-  if (hasAccess === null) {
+  if (subscriptionData?.hasAccess === null) {
     return <div>Loading subscription status...</div>
   }
 
@@ -102,7 +71,7 @@ export default function AgentPage() {
             onChange={(e) => setAgentName(e.target.value)}
             className='mr-4 p-2 border rounded'
           />
-          <Button onClick={createAgent} disabled={isLoading || !hasAccess} className='cursor-pointer'>
+          <Button onClick={createAgent} disabled={isLoading || !subscriptionData?.hasAccess} className='cursor-pointer'>
             {isLoading ? (
               <>
                 <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -178,8 +147,6 @@ export default function AgentPage() {
           ))}
         </div>
       )}
-
-      {selectedAgentId && <ConversationsPage agentId={selectedAgentId} />}
     </div>
   )
 }

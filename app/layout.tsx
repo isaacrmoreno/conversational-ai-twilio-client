@@ -4,6 +4,7 @@ import { Manrope } from 'next/font/google'
 import { UserProvider } from '@/lib/auth'
 import { getUser } from '@/lib/db/queries'
 import { Analytics } from '@vercel/analytics/react'
+import { Toaster } from '@/components/ui/sonner'
 
 export const metadata: Metadata = {
   title: 'Next.js SaaS Starter',
@@ -24,6 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className='min-h-[100dvh] bg-gray-50'>
         <UserProvider userPromise={userPromise}>
           {children}
+          <Toaster />
           <Analytics />
         </UserProvider>
       </body>

@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
+import { toast } from 'sonner'
+import axios from 'axios'
 
 export default function AgentPage() {
   const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
@@ -14,14 +16,12 @@ export default function AgentPage() {
   const agents = data?.data
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
 
-  const [isLoading, setIsLoading] = useState(false)
-  const [agentCreated, setAgentCreated] = useState(false)
-  const [agentName, setAgentName] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
+  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [agentName, setAgentName] = useState<string>('')
 
   const createAgent = async () => {
     if (!agentName.trim()) {
-      setErrorMessage('Agent name cannot be blank.')
+      toast.error('Agent name cannot be blank.')
       return
     }
 
@@ -41,9 +41,8 @@ export default function AgentPage() {
         throw new Error('Failed to create agent')
       }
 
-      setAgentCreated(true)
+      toast.success('Agent created successfully!')
       setAgentName('')
-      setErrorMessage('')
       mutate()
     } catch (error) {
       console.error('Error creating agent:', error)
@@ -86,21 +85,9 @@ export default function AgentPage() {
         </Button>
       </div>
 
-      {errorMessage && (
-        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
-          <p className='text-red-800'>{errorMessage}</p>
-        </div>
-      )}
-
       {error && (
         <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
           <p className='text-red-800'>Error loading agents. Please try again.</p>
-        </div>
-      )}
-
-      {agentCreated && (
-        <div className='p-4 mb-6 bg-green-50 border border-green-200 rounded-md'>
-          <p className='text-green-800'>Agent created successfully!</p>
         </div>
       )}
 

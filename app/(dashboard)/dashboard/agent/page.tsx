@@ -4,51 +4,16 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, Plus, User } from 'lucide-react'
+import { Loader2, User } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
-import { toast } from 'sonner'
+import AddAgentModal from '@/components/AddAgentModal'
 
 export default function AgentPage() {
-  const { data, error, mutate } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
+  const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
 
   const agents = data?.data
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
-
-  const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [agentName, setAgentName] = useState<string>('')
-
-  const createAgent = async () => {
-    if (!agentName.trim()) {
-      toast.error('Agent name cannot be blank.')
-      return
-    }
-
-    setIsLoading(true)
-    try {
-      const response = await fetch('/api/eleven-labs/agents/create-agent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: agentName
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to create agent')
-      }
-
-      toast.success('Agent created successfully!')
-      setAgentName('')
-      mutate()
-    } catch (error) {
-      console.error('Error creating agent:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
 
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
@@ -59,32 +24,9 @@ export default function AgentPage() {
 
   return (
     <section className='flex-1 p-4 lg:p-8'>
-      <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Agent Management</h1>
-
-      <div className='flex items-center'>
-        <input
-          type='text'
-          placeholder='Enter agent name'
-          value={agentName}
-          onChange={(e) => setAgentName(e.target.value)}
-          className='mr-4 p-2 border rounded'
-        />
-        <Button
-          onClick={createAgent}
-          disabled={isLoading || !subscriptionData?.hasAccess || agents?.length > 0}
-          className='cursor-pointer'>
-          {isLoading ? (
-            <>
-              <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-              Creating...
-            </>
-          ) : (
-            <>
-              <Plus className='h-4 w-4 mr-2' />
-              Create Agent
-            </>
-          )}
-        </Button>
+      <div className='flex justify-between'>
+        <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900'>Agent Management</h1>
+        <AddAgentModal />
       </div>
 
       {error && (

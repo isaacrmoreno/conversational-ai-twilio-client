@@ -1,4 +1,3 @@
-import { ElevenLabsClient } from 'elevenlabs'
 import { NextResponse } from 'next/server'
 import { getUser } from '@/lib/db/queries'
 import { agents } from '@/lib/db/schema'
@@ -13,21 +12,10 @@ export async function GET() {
       return NextResponse.json({ success: false, message: 'User not authenticated' }, { status: 401 })
     }
 
-    const client = new ElevenLabsClient({ apiKey: process.env.ELEVENLABS_API_KEY })
-
-    const response = await client.conversationalAi.getAgents()
-
-    if (!response.agents) {
-      return NextResponse.json({ success: false, message: 'No agents found' }, { status: 404 })
-    }
-
-    const userAgentsFromDB = await db.select().from(agents).where(eq(agents.creator_email, user.email)).execute()
+    const userAgentsFromDB = await db.select().from(agents).where(eq(agents.creator_id, user.id)).execute()
 
     if (userAgentsFromDB.length === 0) {
-      return NextResponse.json(
-        { success: false, message: 'No agents found for the user in the database' },
-        { status: 404 }
-      )
+      return NextResponse.json({ success: true }, { status: 200 })
     }
 
     const formattedAgents = userAgentsFromDB.map((agent) => ({

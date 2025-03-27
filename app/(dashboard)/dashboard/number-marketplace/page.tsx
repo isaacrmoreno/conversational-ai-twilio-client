@@ -11,6 +11,7 @@ import { fetcher } from '@/utils'
 import type { PhoneNumber } from '@/types'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
+import WarningBlock from '@/components/warning-block'
 
 export default function NumberMarketplacePage() {
   const [areaCode, setAreaCode] = useState<string>('')
@@ -90,9 +91,7 @@ export default function NumberMarketplacePage() {
       )}
 
       {hasNumber ? (
-        <div className='p-3 mb-6 bg-yellow-50 border border-yellow-200 rounded-md'>
-          <p className='text-yellow-800'>You already have a phone number. You can't purchase another one.</p>
-        </div>
+        <WarningBlock text="You already have a phone number. You can't purchase another one." />
       ) : (
         <div className='flex space-x-2 mb-6'>
           <Input

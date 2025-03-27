@@ -5,7 +5,7 @@ import useSWR from 'swr'
 import { Card, CardContent } from '@/components/ui/card'
 import { Loader2, User } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
-import ConversationsPage from '@/components/Conversations'
+import ConversationsPage from '@/components/conversations'
 
 export default function AgentPage() {
   const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)

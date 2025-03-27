@@ -1,20 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import useSWR from 'swr'
-import { Button } from '@/components/ui/button'
+import useSWR, { mutate } from 'swr'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Loader2, User } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
-import AddAgentModal from '@/components/AddAgentModal'
+import AddAgentModal from '@/components/add-agent-modal'
 import DeleteConfirmationModal from '@/components/delete-confirmation-modal'
+import { toast } from 'sonner'
+import axios from 'axios'
+import WarningBlock from '@/components/warning-block'
 
 export default function AgentPage() {
   const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
 
   const agents = data?.data
+
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
@@ -23,15 +27,29 @@ export default function AgentPage() {
     return <div>Loading subscription status...</div>
   }
 
+  const deleteAgent = async (agent_id: number) => {
+    setIsLoading(true)
+    try {
+      await axios.delete(`/api/eleven-labs/agents/delete-agent?agent_id=${agent_id}`)
+      toast.success('Agent deleted successfully!')
+      mutate('/api/eleven-labs/agents/list-agents')
+    } catch (error) {
+      console.error('Error deleting agent:', error)
+      toast.error('Failed to delete agent')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   return (
     <section className='flex-1 p-4 lg:p-8'>
       <div className='flex justify-between'>
-        <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900'>Agent Management</h1>
+        <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Agent Management</h1>
         <AddAgentModal />
       </div>
 
       {error && (
-        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md'>
+        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md mt-4'>
           <p className='text-red-800'>Error loading agents. Please try again.</p>
         </div>
       )}
@@ -41,14 +59,7 @@ export default function AgentPage() {
           <Loader2 className='h-8 w-8 animate-spin text-primary' />
         </div>
       ) : !hasAgents ? (
-        <Card className='max-w-md mx-auto'>
-          <CardContent className='pt-6'>
-            <div className='flex flex-col items-center justify-center text-center p-6'>
-              <User className='h-12 w-12 text-muted-foreground mb-4' />
-              <p className='text-muted-foreground'>No agents found. Create one to get started.</p>
-            </div>
-          </CardContent>
-        </Card>
+        <WarningBlock text='No agents found. Create one to get started.' />
       ) : (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6'>
           {agents.map((agent: any) => (
@@ -75,7 +86,7 @@ export default function AgentPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <DeleteConfirmationModal onDelete={() => console.log('hi')} />
+                <DeleteConfirmationModal onDelete={() => deleteAgent(agent.agent_id)} />
               </CardFooter>
             </Card>
           ))}

@@ -1,7 +1,7 @@
 import { ElevenLabsClient } from 'elevenlabs'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url)
     const conversation_id = url.searchParams.get('conversation_id')

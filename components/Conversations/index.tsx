@@ -28,7 +28,10 @@ interface Conversation {
 export default function Conversations({ agentId }: ConversationsPageProps) {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
 
-  const { data, error, isLoading } = useSWR(`/api/conversations/list-conversations?agent_id=${agentId}`, fetcher)
+  const { data, error, isLoading } = useSWR(
+    `/api/eleven-labs/conversations/list-conversations?agent_id=${agentId}`,
+    fetcher
+  )
 
   const {
     data: conversationData,
@@ -36,7 +39,7 @@ export default function Conversations({ agentId }: ConversationsPageProps) {
     isLoading: isConversationLoading
   } = useSWR(
     selectedConversationId
-      ? `/api/conversations/get-conversation-details?conversation_id=${selectedConversationId}`
+      ? `/api/eleven-labs/conversations/get-conversation-details?conversation_id=${selectedConversationId}`
       : null,
     fetcher
   )

@@ -3,14 +3,13 @@
 import { useState } from 'react'
 import useSWR from 'swr'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2, Plus, User } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
 import { toast } from 'sonner'
-import axios from 'axios'
 
 export default function AgentPage() {
-  const { data, error, mutate } = useSWR(`/api/agents/list-agents`, fetcher)
+  const { data, error, mutate } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
 
   const agents = data?.data
@@ -27,7 +26,7 @@ export default function AgentPage() {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/agents/create-agent', {
+      const response = await fetch('/api/eleven-labs/agents/create-agent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -70,7 +69,10 @@ export default function AgentPage() {
           onChange={(e) => setAgentName(e.target.value)}
           className='mr-4 p-2 border rounded'
         />
-        <Button onClick={createAgent} disabled={isLoading || !subscriptionData?.hasAccess} className='cursor-pointer'>
+        <Button
+          onClick={createAgent}
+          disabled={isLoading || !subscriptionData?.hasAccess || agents?.length > 0}
+          className='cursor-pointer'>
           {isLoading ? (
             <>
               <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -129,6 +131,9 @@ export default function AgentPage() {
                   </div>
                 </div>
               </CardContent>
+              <CardFooter>
+                <Button>hi</Button>
+              </CardFooter>
             </Card>
           ))}
         </div>

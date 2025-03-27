@@ -44,7 +44,7 @@ export default function CallPage() {
 
     const fetchAgents = async () => {
       try {
-        const response = await fetch('/api/agents/list-agents') // API to fetch agents
+        const response = await fetch('/api/eleven-labs/agents/list-agents')
         const data = await response.json()
 
         if (data.success && data.data) {

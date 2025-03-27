@@ -8,7 +8,7 @@ import { fetcher, formatDate } from '@/utils'
 import ConversationsPage from '@/components/Conversations'
 
 export default function AgentPage() {
-  const { data, error } = useSWR(`/api/agents/list-agents`, fetcher)
+  const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
 
   const agents = data?.data

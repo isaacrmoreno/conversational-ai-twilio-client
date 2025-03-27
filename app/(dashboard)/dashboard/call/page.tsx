@@ -7,21 +7,29 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { useRouter } from 'next/navigation'
+import useSWR from 'swr'
+import { fetcher } from '@/utils'
 
 export default function CallPage() {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
-  const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
+  // const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
   const [selectedNumber, setSelectedNumber] = useState<string>('')
   const [toNumber, setToNumber] = useState<string>('')
-  const [selectedAgent, setSelectedAgent] = useState<string>('') // New state for agent selection
-  const [agents, setAgents] = useState<any[]>([]) // State to hold the list of agents
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null) // Store the access status
-  const [trialing, setTrialing] = useState(false) // To handle trialing status
+  const [selectedAgent, setSelectedAgent] = useState<string>('')
+  // const [agents, setAgents] = useState<any[]>([])
+  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
+  const [trialing, setTrialing] = useState(false)
 
-  // Fetch the subscription and agents info
+  const { data: userAgents } = useSWR('/api/eleven-labs/agents/list-agents', fetcher)
+  const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
+
+  const agents = userAgents?.data
+  const twilioNumbers = userNumbers?.data
+  const userPhoneNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
+
   useEffect(() => {
     const fetchSubscriptionStatus = async () => {
       try {
@@ -42,44 +50,7 @@ export default function CallPage() {
       }
     }
 
-    const fetchAgents = async () => {
-      try {
-        const response = await fetch('/api/eleven-labs/agents/list-agents')
-        const data = await response.json()
-
-        if (data.success && data.data) {
-          setAgents(data.data) // Set the list of agents
-        }
-      } catch (err) {
-        console.error('Error fetching agents:', err)
-        setError('Failed to load agents.')
-      }
-    }
-
     fetchSubscriptionStatus()
-    fetchAgents()
-  }, [])
-
-  useEffect(() => {
-    // Fetch phone numbers for the user when component mounts
-    const fetchUserPhoneNumbers = async () => {
-      try {
-        const response = await fetch('/api/numbers/fetch-user-numbers')
-        const data = await response.json()
-        const twilioNumbers = data?.data
-
-        if (data.success && twilioNumbers.length > 0) {
-          const cleanedNumbers = twilioNumbers.map((number: any) => number.replace('+1', ''))
-          setUserPhoneNumbers(cleanedNumbers)
-        } else {
-          setUserPhoneNumbers([])
-        }
-      } catch (err) {
-        console.error('Error fetching phone numbers:', err)
-      }
-    }
-
-    fetchUserPhoneNumbers()
   }, [])
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -145,6 +116,38 @@ export default function CallPage() {
     router.push('/dashboard/number-marketplace')
   }
 
+  const handleStartCampaign = async () => {
+    setIsLoading(true)
+    setError(null)
+    setResult(null)
+
+    try {
+      const res = await fetch('/api/start-campaign', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          numbers: userPhoneNumbers,
+          agent_id: selectedAgent,
+          prompt: result,
+          first_message: toNumber,
+          from: selectedNumber
+        })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Unknown error')
+      }
+
+      setResult(data.campaign_result)
+    } catch (err: any) {
+      setError(err.message || 'Failed to start campaign.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (hasAccess === null) {
     return <div>Loading...</div> // Show loading state while checking access
   }
@@ -152,6 +155,39 @@ export default function CallPage() {
   return (
     <div className='flex justify-center'>
       <div className='container max-w-2xl py-10'>
+        {/* <Card>
+          <CardHeader>
+            <CardTitle>Start Call Campaign</CardTitle>
+            <CardDescription>Send a call to multiple numbers using your AI agent.</CardDescription>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <Input
+              placeholder='Paste phone numbers separated by commas'
+              onChange={(e) => setUserPhoneNumbers(e.target.value.split(',').map((n) => n.trim()))}
+            />
+
+            <select
+              value={selectedAgent}
+              onChange={(e) => setSelectedAgent(e.target.value)}
+              className='w-full p-2 border rounded'>
+              <option value=''>Select an Agent</option>
+              {agents.map((agent: any) => (
+                <option key={agent.agent_id} value={agent.agent_id}>
+                  {agent.name || agent.agent_id}
+                </option>
+              ))}
+            </select>
+
+            <Textarea placeholder='Enter the AI prompt or call script' onChange={(e) => setResult(e.target.value)} />
+
+            <Textarea placeholder='First thing the AI says on the call' onChange={(e) => setToNumber(e.target.value)} />
+
+            <Button disabled={isLoading} onClick={handleStartCampaign}>
+              {isLoading ? 'Starting...' : 'Start Campaign'}
+            </Button>
+          </CardContent>
+        </Card> */}
+
         <Card>
           <CardHeader>
             <CardTitle>Create Call</CardTitle>
@@ -162,6 +198,17 @@ export default function CallPage() {
               <div className='mt-6 p-4 bg-red-50 text-red-600 rounded-md'>
                 <p className='font-medium'>Error</p>
                 <p>{error}</p>
+              </div>
+            )}
+
+            {result && Array.isArray(result) && (
+              <div className='mt-4 space-y-2'>
+                <h3 className='text-lg font-semibold'>Campaign Result:</h3>
+                {result.map((r, idx) => (
+                  <p key={idx} className='text-sm'>
+                    {r.to}: {r.status}
+                  </p>
+                ))}
               </div>
             )}
 
@@ -223,7 +270,7 @@ export default function CallPage() {
                   <option value='' disabled>
                     Select an agent
                   </option>
-                  {agents.map((agent) => (
+                  {agents.map((agent: any) => (
                     <option key={agent.agent_id} value={agent.agent_id}>
                       {agent.name}
                     </option>
@@ -246,7 +293,7 @@ export default function CallPage() {
                     <option value='' disabled>
                       Select a phone number
                     </option>
-                    {userPhoneNumbers.map((number) => (
+                    {userPhoneNumbers.map((number: number) => (
                       <option key={number} value={number}>
                         {number}
                       </option>

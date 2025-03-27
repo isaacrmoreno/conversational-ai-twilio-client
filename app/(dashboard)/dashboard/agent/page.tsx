@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, User } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
 import AddAgentModal from '@/components/AddAgentModal'
+import DeleteConfirmationModal from '@/components/delete-confirmation-modal'
 
 export default function AgentPage() {
   const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
@@ -74,7 +75,7 @@ export default function AgentPage() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>hi</Button>
+                <DeleteConfirmationModal onDelete={() => console.log('hi')} />
               </CardFooter>
             </Card>
           ))}

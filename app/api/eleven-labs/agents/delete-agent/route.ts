@@ -18,6 +18,8 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'No agent found' }, { status: 404 })
     }
 
+    // need to delete association in db too! and see how this affects conversations history.
+
     return NextResponse.json({ success: true, data: response })
   } catch (error) {
     console.error('Error retrieving agent:', error)

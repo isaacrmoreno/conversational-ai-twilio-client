@@ -5,11 +5,12 @@ import useSWR, { mutate } from 'swr'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { fetcher, formatDate } from '@/utils'
+import { toast } from 'sonner'
 import AddAgentModal from '@/components/add-agent-modal'
 import DeleteConfirmationModal from '@/components/delete-confirmation-modal'
-import { toast } from 'sonner'
 import axios from 'axios'
 import WarningBlock from '@/components/warning-block'
+import DangerBlock from '@/components/danger-block'
 
 export default function AgentPage() {
   const { data, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
@@ -18,7 +19,6 @@ export default function AgentPage() {
   const agents = data?.data
 
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
 
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
@@ -28,7 +28,6 @@ export default function AgentPage() {
   }
 
   const deleteAgent = async (agent_id: number) => {
-    setIsLoading(true)
     try {
       await axios.delete(`/api/eleven-labs/agents/delete-agent?agent_id=${agent_id}`)
       toast.success('Agent deleted successfully!')
@@ -36,8 +35,6 @@ export default function AgentPage() {
     } catch (error) {
       console.error('Error deleting agent:', error)
       toast.error('Failed to delete agent')
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -48,11 +45,7 @@ export default function AgentPage() {
         <AddAgentModal />
       </div>
 
-      {error && (
-        <div className='p-4 mb-6 bg-red-50 border border-red-200 rounded-md mt-4'>
-          <p className='text-red-800'>Error loading agents. Please try again.</p>
-        </div>
-      )}
+      {error && <DangerBlock text='Error loading agents. Please try again.' />}
 
       {!data ? (
         <div className='flex justify-center items-center h-40'>
@@ -61,7 +54,7 @@ export default function AgentPage() {
       ) : !hasAgents ? (
         <WarningBlock text='No agents found. Create one to get started.' />
       ) : (
-        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6'>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
           {agents.map((agent: any) => (
             <Card
               key={agent.agent_id}

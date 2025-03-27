@@ -1,350 +1,138 @@
 'use client'
 
 import type React from 'react'
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { useRouter } from 'next/navigation'
 import useSWR from 'swr'
 import { fetcher } from '@/utils'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import axios from 'axios'
+import DangerBlock from '@/components/danger-block'
 
 export default function CallPage() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const [result, setResult] = useState<any>(null)
-  const [error, setError] = useState<string | null>(null)
-  // const [userPhoneNumbers, setUserPhoneNumbers] = useState<string[]>([])
-  const [selectedNumber, setSelectedNumber] = useState<string>('')
-  const [toNumber, setToNumber] = useState<string>('')
-  const [selectedAgent, setSelectedAgent] = useState<string>('')
-  // const [agents, setAgents] = useState<any[]>([])
-  const [hasAccess, setHasAccess] = useState<boolean | null>(null)
-  const [trialing, setTrialing] = useState(false)
+  const [outboundPhoneNumbers, setOutboundPhoneNumbers] = useState<string[]>([])
 
   const { data: userAgents } = useSWR('/api/eleven-labs/agents/list-agents', fetcher)
   const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
+  const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
 
   const agents = userAgents?.data
   const twilioNumbers = userNumbers?.data
-  const userPhoneNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
+  const userTwilioNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
 
-  useEffect(() => {
-    const fetchSubscriptionStatus = async () => {
-      try {
-        const response = await fetch('/api/stripe/check-subscription')
-        const data = await response.json()
+  if (subscriptionData?.hasAccess === null) {
+    return <div>Loading subscription status...</div>
+  }
 
-        if (data.error) {
-          setError(data.error)
-          setHasAccess(false)
-        } else {
-          setHasAccess(data.hasAccess)
-          setTrialing(data.trialing || false) // Handle trialing status
-        }
-      } catch (err) {
-        console.error('Error fetching subscription status:', err)
-        setError('Failed to check subscription status.')
-        setHasAccess(false)
-      }
-    }
+  const hasAccess = subscriptionData?.hasAccess
 
-    fetchSubscriptionStatus()
-  }, [])
-
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleStartCampaign = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    if (!hasAccess) {
-      setError('You do not have access to initiate a call. Please check your subscription.')
-      return
-    }
-
-    if (!selectedAgent) {
-      setError('Please select an agent for the call.')
-      return
-    }
 
     setIsLoading(true)
-    setError(null)
-
-    const formData = new FormData(event.currentTarget)
-    const callObject = {
-      prompt: formData.get('prompt'),
-      first_message: formData.get('first_message'),
-      from: selectedNumber,
-      to: toNumber,
-      agent_id: selectedAgent
-    }
-
-    try {
-      const response = await fetch('/api/outbound-call', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(callObject)
-      })
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`)
-      }
-
-      const data = await response.json()
-      setResult(data)
-      router.refresh()
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const handleNumberChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedNumber(event.target.value)
-  }
-
-  const handleToNumberChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setToNumber(event.target.value)
-  }
-
-  const handleAgentChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAgent(event.target.value) // Update the selected agent
-  }
-
-  const handleGetNewNumber = () => {
-    router.push('/dashboard/number-marketplace')
-  }
-
-  const handleStartCampaign = async () => {
-    setIsLoading(true)
-    setError(null)
     setResult(null)
 
+    const formData = new FormData(event.currentTarget)
+    const body = {
+      prompt: formData.get('prompt'),
+      first_message: formData.get('first_message'),
+      from: formData.get('from_number'),
+      numbers: outboundPhoneNumbers,
+      agent_id: formData.get('selected_agent')
+    }
+
     try {
-      const res = await fetch('/api/start-campaign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          numbers: userPhoneNumbers,
-          agent_id: selectedAgent,
-          prompt: result,
-          first_message: toNumber,
-          from: selectedNumber
-        })
-      })
+      const response = await axios.post('/api/start-campaign', body)
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Unknown error')
-      }
-
-      setResult(data.campaign_result)
+      setResult(response.data.campaign_result)
     } catch (err: any) {
-      setError(err.message || 'Failed to start campaign.')
+      toast.error(err.message || 'Failed to start campaign.')
     } finally {
       setIsLoading(false)
     }
   }
 
   if (hasAccess === null) {
-    return <div>Loading...</div> // Show loading state while checking access
+    return <div>Loading...</div>
+  }
+
+  if (!hasAccess) {
+    return <DangerBlock text='Please ensure your subscription is active.' />
   }
 
   return (
-    <div className='flex justify-center'>
-      <div className='container max-w-2xl py-10'>
-        {/* <Card>
-          <CardHeader>
-            <CardTitle>Start Call Campaign</CardTitle>
-            <CardDescription>Send a call to multiple numbers using your AI agent.</CardDescription>
-          </CardHeader>
-          <CardContent className='space-y-4'>
+    <section className='flex-1 p-4 lg:p-8'>
+      <div className='flex justify-between'>
+        <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Start Call Campaign</h1>
+      </div>
+      <Card>
+        <CardHeader>
+          <CardDescription>Send a call to multiple numbers using your AI agent.</CardDescription>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <form onSubmit={handleStartCampaign} className='space-y-6'>
             <Input
               placeholder='Paste phone numbers separated by commas'
-              onChange={(e) => setUserPhoneNumbers(e.target.value.split(',').map((n) => n.trim()))}
+              onChange={(e) => setOutboundPhoneNumbers(e.target.value.split(',').map((n) => n.trim()))}
+              required
             />
-
-            <select
-              value={selectedAgent}
-              onChange={(e) => setSelectedAgent(e.target.value)}
-              className='w-full p-2 border rounded'>
+            <select id='selected_agent' name='selected_agent' className='w-full p-2 border rounded-lg' required>
               <option value=''>Select an Agent</option>
-              {agents.map((agent: any) => (
+              {agents?.map((agent: any) => (
                 <option key={agent.agent_id} value={agent.agent_id}>
                   {agent.name || agent.agent_id}
                 </option>
               ))}
             </select>
 
-            <Textarea placeholder='Enter the AI prompt or call script' onChange={(e) => setResult(e.target.value)} />
-
-            <Textarea placeholder='First thing the AI says on the call' onChange={(e) => setToNumber(e.target.value)} />
-
-            <Button disabled={isLoading} onClick={handleStartCampaign}>
-              {isLoading ? 'Starting...' : 'Start Campaign'}
-            </Button>
-          </CardContent>
-        </Card> */}
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Create Call</CardTitle>
-            <CardDescription>Fill out the form below to initiate an outbound call.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {error && (
-              <div className='mt-6 p-4 bg-red-50 text-red-600 rounded-md'>
-                <p className='font-medium'>Error</p>
-                <p>{error}</p>
-              </div>
-            )}
-
-            {result && Array.isArray(result) && (
-              <div className='mt-4 space-y-2'>
-                <h3 className='text-lg font-semibold'>Campaign Result:</h3>
-                {result.map((r, idx) => (
-                  <p key={idx} className='text-sm'>
-                    {r.to}: {r.status}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {!hasAccess && (
-              <div className='mt-6 p-4 bg-yellow-50 text-yellow-600 rounded-md'>
-                <p className='font-medium'>Subscription Issue</p>
-                <p>
-                  Your team does not have access to initiate calls. Please ensure your subscription is active.{' '}
-                  {trialing && <span>(You are currently on a trial.)</span>}
-                </p>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className='space-y-6'>
-              <div className='space-y-2'>
-                <label htmlFor='prompt' className='text-sm font-medium'>
-                  Prompt
-                </label>
-                <Textarea
-                  id='prompt'
-                  name='prompt'
-                  placeholder='Enter call instructions...'
-                  defaultValue={
-                    'You are an AI assistant calling on behalf of a real estate agent to gauge how serious a lead is about selling their home and gather details on their selling goals.'
-                  }
-                  className='min-h-[100px]'
-                  required
-                />
-                <p className='text-sm text-muted-foreground'>Instructions for the call.</p>
-              </div>
-
-              <div className='space-y-2'>
-                <label htmlFor='first_message' className='text-sm font-medium'>
-                  First Message
-                </label>
-                <Input
-                  id='first_message'
-                  name='first_message'
-                  placeholder='Enter first message...'
-                  required
-                  defaultValue={
-                    'Hello, this is an AI assistant calling on behalf of [Real Estate Agent’s Name]. I’m reaching out because you inquired about selling your home. Can you share what price you’re hoping to sell for?'
-                  }
-                />
-                <p className='text-sm text-muted-foreground'>The initial message to send.</p>
-              </div>
-
-              <div className='space-y-2'>
-                <label htmlFor='agent' className='text-sm font-medium'>
-                  Select Agent
-                </label>
-                <select
-                  id='agent'
-                  name='agent'
-                  value={selectedAgent}
-                  onChange={handleAgentChange}
-                  className='w-full p-2 border rounded-md'
-                  required>
-                  <option value='' disabled>
-                    Select an agent
-                  </option>
-                  {agents.map((agent: any) => (
-                    <option key={agent.agent_id} value={agent.agent_id}>
-                      {agent.name}
+            <div className='space-y-2'>
+              {userTwilioNumbers?.length > 0 ? (
+                <select id='from_number' name='from_number' className='w-full p-2 border rounded-lg' required>
+                  <option value=''>Select a phone number</option>
+                  {userTwilioNumbers?.map((number: number) => (
+                    <option key={number} value={number}>
+                      {number}
                     </option>
                   ))}
                 </select>
-              </div>
-
-              <div className='space-y-2'>
-                <label htmlFor='fromNumber' className='text-sm font-medium'>
-                  From Number (Select your number)
-                </label>
-
-                {userPhoneNumbers.length > 0 ? (
-                  <select
-                    id='fromNumber'
-                    name='fromNumber'
-                    value={selectedNumber}
-                    onChange={handleNumberChange}
-                    className='w-full p-2 border rounded-md'>
-                    <option value='' disabled>
-                      Select a phone number
-                    </option>
-                    {userPhoneNumbers.map((number: number) => (
-                      <option key={number} value={number}>
-                        {number}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <div className='flex justify-between items-center'>
-                    <p className='text-sm text-muted-foreground'>
-                      You don't have any phone numbers. Get one to proceed.
-                    </p>
-                    <Button onClick={handleGetNewNumber} className='ml-4'>
-                      Get Number
-                    </Button>
-                  </div>
-                )}
-              </div>
-
-              <div className='space-y-2'>
-                <label htmlFor='toNumber' className='text-sm font-medium'>
-                  To Number (Enter the number you want to call)
-                </label>
-                <Input
-                  id='toNumber'
-                  name='toNumber'
-                  type='tel'
-                  pattern='[0-9]{10}'
-                  title='Please enter a valid 10-digit phone number'
-                  value={toNumber}
-                  onChange={handleToNumberChange}
-                  placeholder='Enter the phone number to call'
-                  required
-                />
-              </div>
-
-              <Button
-                type='submit'
-                className='w-full'
-                disabled={isLoading || !selectedNumber || !toNumber || !selectedAgent || !hasAccess}>
-                {isLoading ? 'Initiating Call...' : 'Initiate Call'}
-              </Button>
-            </form>
-
-            {result && (
-              <div className='mt-6'>
-                <h3 className='text-lg font-medium mb-2'>Response:</h3>
-                <pre className='bg-muted p-4 rounded-md w-full overflow-auto'>{JSON.stringify(result, null, 2)}</pre>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+              ) : (
+                <div className='flex justify-between items-center'>
+                  <Link href='/dashboard/number-marketplace'>
+                    <Button>Get Number</Button>
+                  </Link>
+                  <p className='text-sm text-muted-foreground'>You don't have any phone numbers. Get one to proceed.</p>
+                </div>
+              )}
+            </div>
+            <Textarea id='prompt' name='prompt' placeholder='Enter the AI prompt or call script' required />
+            <Textarea
+              id='first_message'
+              name='first_message'
+              placeholder='First thing the AI says on the call'
+              required
+            />
+            <Button disabled={isLoading} type='submit'>
+              {isLoading ? 'Starting...' : 'Start Campaign'}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+      {result && Array.isArray(result) && (
+        <div className='mt-4 space-y-2'>
+          <h3 className='text-lg font-semibold'>Campaign Result:</h3>
+          {result.map((r, idx) => (
+            <p key={idx} className='text-sm'>
+              {r.to}: {r.status}
+            </p>
+          ))}
+        </div>
+      )}
+    </section>
   )
 }

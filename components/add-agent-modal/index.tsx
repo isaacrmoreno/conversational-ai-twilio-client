@@ -13,6 +13,9 @@ import { mutate } from 'swr'
 
 export default function AddAgentModal() {
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
+  const { data: voiceData } = useSWR('/api/eleven-labs/voices/get-voices', fetcher)
+
+  console.log('voiceData', voiceData)
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)

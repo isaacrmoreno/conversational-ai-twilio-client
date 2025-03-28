@@ -32,9 +32,6 @@ export default function ConversationModal({ conversationId, onClose, open }: Pro
           </DialogTitle>
         </DialogHeader>
 
-        {isLoading && <LoadingBlock />}
-        {error && <DangerBlock text='Failed to load conversation details. Please try again.' />}
-
         <Tabs defaultValue='summary'>
           <TabsList>
             <TabsTrigger value='summary'>Summary</TabsTrigger>
@@ -55,6 +52,9 @@ export default function ConversationModal({ conversationId, onClose, open }: Pro
             {conversation?.transcript && <ConversationTranscript transcript={conversation.transcript} />}
           </TabsContent>
         </Tabs>
+
+        {isLoading && <LoadingBlock />}
+        {error && <DangerBlock text='Failed to load conversation details. Please try again.' />}
 
         <DialogFooter>
           <Button variant='outline' onClick={onClose}>

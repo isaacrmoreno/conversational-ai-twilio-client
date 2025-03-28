@@ -6,7 +6,7 @@ import { agents } from '@/lib/db/schema'
 import { getUser } from '@/lib/db/queries'
 
 export async function POST(req: NextRequest) {
-  const { name } = await req.json()
+  const { name, voice_id } = await req.json()
 
   const user = await getUser()
 
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         },
         tts: {
           model_id: 'eleven_turbo_v2',
-          voice_id: 'cjVigY5qzO86Huf0OWal',
+          voice_id: voice_id,
           agent_output_audio_format: 'ulaw_8000',
           optimize_streaming_latency: 3,
           stability: 0.5,
@@ -84,6 +84,9 @@ export async function POST(req: NextRequest) {
                 prompt: true
               },
               first_message: true
+            },
+            tts: {
+              voice_id: true
             }
           }
         }

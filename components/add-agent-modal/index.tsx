@@ -10,19 +10,19 @@ import { fetcher } from '@/utils'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { mutate } from 'swr'
+import VoiceSelect from '@/components/voice-select'
 
 export default function AddAgentModal() {
   const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
-  const { data: voiceData } = useSWR('/api/eleven-labs/voices/get-voices', fetcher)
-
-  console.log('voiceData', voiceData)
 
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(false)
   const [agentName, setAgentName] = useState<string>('')
+  const [selectedVoiceId, setSelectedVoiceId] = useState<string>('')
 
   interface requestBody {
     name: string
+    voice_id: string
   }
 
   const createAgent = async () => {
@@ -34,7 +34,8 @@ export default function AddAgentModal() {
     setIsLoading(true)
     try {
       const body: requestBody = {
-        name: agentName
+        name: agentName,
+        voice_id: selectedVoiceId
       }
 
       const response = await axios.post('/api/eleven-labs/agents/create-agent', body)
@@ -84,8 +85,9 @@ export default function AddAgentModal() {
                 placeholder='Enter agent name'
               />
             </div>
+            <VoiceSelect selectedVoiceId={selectedVoiceId} setSelectedVoiceId={setSelectedVoiceId} />
             <DialogFooter>
-              <Button onClick={createAgent} disabled={isLoading || !agentName.trim()}>
+              <Button onClick={createAgent} disabled={isLoading || !agentName.trim() || !selectedVoiceId.trim()}>
                 {isLoading ? (
                   <>
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />

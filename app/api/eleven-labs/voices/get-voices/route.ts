@@ -7,7 +7,7 @@ export async function GET() {
 
     const response = await client.voices.getAll()
 
-    return NextResponse.json({ success: true, data: response })
+    return NextResponse.json({ success: true, data: response?.voices })
   } catch (error) {
     console.error('Error fetching voices:', error)
     return NextResponse.json({ success: false, message: 'Failed to fetch voices' }, { status: 500 })

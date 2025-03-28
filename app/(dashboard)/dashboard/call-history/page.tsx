@@ -4,7 +4,7 @@ import { useState } from 'react'
 import useSWR from 'swr'
 import { Card } from '@/components/ui/card'
 import { fetcher, formatDate } from '@/utils'
-import Conversations from '@/components/conversations'
+import ConversationList from '@/components/conversation-list'
 import DangerBlock from '@/components/danger-block'
 import WarningBlock from '@/components/warning-block'
 import LoadingBlock from '@/components/loading-block'
@@ -49,7 +49,7 @@ export default function AgentPage() {
         ))}
       </div>
 
-      {selectedAgentId && <Conversations agentId={selectedAgentId} />}
+      {selectedAgentId && <ConversationList agentId={selectedAgentId} />}
     </section>
   )
 }

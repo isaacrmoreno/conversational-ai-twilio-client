@@ -18,7 +18,7 @@ interface Props {
   agentId: string
 }
 
-export default function Conversations({ agentId }: Props) {
+export default function ConversationList({ agentId }: Props) {
   const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
 

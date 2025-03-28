@@ -2,12 +2,12 @@
 
 import { useState } from 'react'
 import useSWR from 'swr'
-import { Card, CardContent } from '@/components/ui/card'
-import { Loader2, User } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 import { fetcher, formatDate } from '@/utils'
-import ConversationsPage from '@/components/conversations'
+import Conversations from '@/components/conversations'
 import DangerBlock from '@/components/danger-block'
 import WarningBlock from '@/components/warning-block'
+import LoadingBlock from '@/components/loading-block'
 
 export default function AgentPage() {
   const { data, isLoading, error } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
@@ -16,21 +16,11 @@ export default function AgentPage() {
 
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
 
-  if (isLoading) {
-    return (
-      <div className='flex justify-center items-center h-40'>
-        <Loader2 className='h-8 w-8 animate-spin text-primary' />
-      </div>
-    )
-  }
+  if (isLoading) return <LoadingBlock />
 
-  if (error) {
-    return <DangerBlock text='Error loading agents. Please try again.' />
-  }
+  if (error) return <DangerBlock text='Error loading agents. Please try again.' />
 
-  if (agents.length <= 0) {
-    return <WarningBlock text='No agents found. Create one to get started.' />
-  }
+  if (agents.length <= 0) return <WarningBlock text='No agents found. Create one to get started.' />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>
@@ -59,7 +49,7 @@ export default function AgentPage() {
         ))}
       </div>
 
-      {selectedAgentId && <ConversationsPage agentId={selectedAgentId} />}
+      {selectedAgentId && <Conversations agentId={selectedAgentId} />}
     </section>
   )
 }

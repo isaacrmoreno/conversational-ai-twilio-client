@@ -1,3 +1,14 @@
+export interface Conversation {
+  agent_id: string
+  agent_name: string
+  conversation_id: string
+  start_time_unix_secs: number
+  call_duration_secs: number
+  message_count: number
+  status: string
+  call_successful: string
+}
+
 export interface PhoneNumber {
   friendlyName: string
   phoneNumber: string

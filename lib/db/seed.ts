@@ -10,10 +10,11 @@ async function createStripeProducts() {
 
   await stripe.prices.create({
     product: creatorProduct.id,
-    unit_amount: 2200, // $22 in cents
+    unit_amount: 3900, // $39 in cents
     currency: 'usd',
     recurring: {
-      interval: 'month'
+      interval: 'month',
+      trial_period_days: 0
     }
   })
 
@@ -28,7 +29,8 @@ async function createStripeProducts() {
     unit_amount: 19800, // $198 in cents
     currency: 'usd',
     recurring: {
-      interval: 'month'
+      interval: 'month',
+      trial_period_days: 0
     }
   })
 
@@ -43,7 +45,8 @@ async function createStripeProducts() {
     unit_amount: 66000, // $660 in cents
     currency: 'usd',
     recurring: {
-      interval: 'month'
+      interval: 'month',
+      trial_period_days: 0
     }
   })
 

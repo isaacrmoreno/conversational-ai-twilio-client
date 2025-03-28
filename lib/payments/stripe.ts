@@ -29,7 +29,7 @@ export async function createCheckoutSession({ team, priceId }: { team: Team | nu
     client_reference_id: user.id.toString(),
     allow_promotion_codes: true,
     subscription_data: {
-      trial_period_days: 14
+      trial_period_days: 0
     }
   })
 
@@ -144,23 +144,6 @@ export async function getStripePrices() {
     trialPeriodDays: price.recurring?.trial_period_days
   }))
 }
-
-// export async function getStripeOneTimePrices() {
-//   const prices = await stripe.prices.list({
-//     expand: ['data.product'],
-//     active: true,
-//     type: 'one_time'
-//   })
-
-//   return prices.data.map((price) => ({
-//     id: price.id,
-//     productId: typeof price.product === 'string' ? price.product : price.product.id,
-//     unitAmount: price.unit_amount,
-//     currency: price.currency,
-//     interval: price.recurring?.interval,
-//     trialPeriodDays: price.recurring?.trial_period_days
-//   }))
-// }
 
 export async function getStripeProducts() {
   const products = await stripe.products.list({

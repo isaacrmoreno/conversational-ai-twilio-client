@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { forbiddenPatterns } from './forbiddenPatterns'
-
+import { addCallToQueue } from './addCallToQueue' // Import the addCallToQueue function
 import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -56,14 +56,20 @@ export async function POST(req: NextRequest) {
     // Delay between calls
     await new Promise((r) => setTimeout(r, 3000))
 
-    const res = await fetch(`${process.env.RENDER_URL}/outbound-call`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt, first_message, from, to, agent_id })
-    })
+    try {
+      await addCallToQueue(agent_id, from, to, prompt, first_message) // Add the call to the queue
+      const res = await fetch(`${process.env.RENDER_URL}/outbound-call`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt, first_message, from, to, agent_id })
+      })
 
-    const data = await res.json()
-    results.push({ to, status: res.ok ? 'success' : 'error', response: data })
+      const data = await res.json()
+      results.push({ to, status: res.ok ? 'success' : 'error', response: data })
+    } catch (error) {
+      console.error('Error adding call to queue:', error)
+      results.push({ to, status: 'error', response: 'Failed to add to queue' })
+    }
   }
 
   return NextResponse.json({ campaign_result: results })

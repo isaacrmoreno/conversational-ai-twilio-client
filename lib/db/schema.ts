@@ -17,8 +17,8 @@ export const calls = pgTable('calls', {
   agent_id: integer('agent_id')
     .notNull()
     .references(() => agents.id),
-  from: varchar('from', { length: 20 }).notNull(),
-  to: varchar('to', { length: 20 }).notNull(),
+  from_number: varchar('from', { length: 20 }).notNull(),
+  to_number: varchar('to', { length: 20 }).notNull(),
   status: varchar('status', { length: 50 }).notNull().default('queued'), // 'queued', 'in_progress', 'completed'
   prompt: text('prompt').notNull(),
   first_message: text('first_message').notNull(),

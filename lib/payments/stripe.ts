@@ -27,10 +27,10 @@ export async function createCheckoutSession({ team, priceId }: { team: Team | nu
     cancel_url: `${process.env.BASE_URL}/pricing`,
     customer: team.stripeCustomerId || undefined,
     client_reference_id: user.id.toString(),
-    allow_promotion_codes: false
-    // subscription_data: {
-    //   trial_period_days: 1
-    // }
+    allow_promotion_codes: false,
+    subscription_data: {
+      trial_period_days: 1
+    }
   })
 
   redirect(session.url!)

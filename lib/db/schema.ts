@@ -12,6 +12,20 @@ export const agents = pgTable('agents', {
   creator_email: varchar('creator_email', { length: 255 }).notNull()
 })
 
+export const calls = pgTable('calls', {
+  id: serial('id').primaryKey(),
+  agent_id: integer('agent_id')
+    .notNull()
+    .references(() => agents.id),
+  from: varchar('from', { length: 20 }).notNull(),
+  to: varchar('to', { length: 20 }).notNull(),
+  status: varchar('status', { length: 50 }).notNull().default('queued'), // 'queued', 'in_progress', 'completed'
+  prompt: text('prompt').notNull(),
+  first_message: text('first_message').notNull(),
+  created_at: timestamp('created_at').defaultNow().notNull(),
+  updated_at: timestamp('updated_at').defaultNow().notNull()
+})
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 100 }),

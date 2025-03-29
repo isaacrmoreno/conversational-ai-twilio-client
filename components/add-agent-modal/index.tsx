@@ -87,7 +87,7 @@ export default function AddAgentModal() {
             </div>
             <VoiceSelect selectedVoiceId={selectedVoiceId} setSelectedVoiceId={setSelectedVoiceId} />
             <DialogFooter>
-              <Button onClick={createAgent} disabled={isLoading || !agentName.trim() || !selectedVoiceId.trim()}>
+              <Button onClick={createAgent} disabled={isLoading}>
                 {isLoading ? (
                   <>
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />

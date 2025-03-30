@@ -20,13 +20,13 @@ export default function AgentPage() {
 
   if (error) return <DangerBlock text='Error loading agents. Please try again.' />
 
-  if (agents.length <= 0) return <WarningBlock text='No agents found. Create one to get started.' />
+  if (agents?.length === 0) return <WarningBlock text='No conversation history found.' />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>
       <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Call History</h1>
-      <div className=''>
-        {agents.map((agent: any) => (
+      <div>
+        {agents?.map((agent: any) => (
           <Card
             key={agent.agent_id}
             className='cursor-default flex justify-between items-center px-4 py-2 my-2'

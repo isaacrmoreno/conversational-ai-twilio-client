@@ -10,8 +10,9 @@ import { Card, CardContent } from '@/components/ui/card'
 import { fetcher } from '@/utils'
 import type { PhoneNumber } from '@/types'
 import { Badge } from '@/components/ui/badge'
-import { Skeleton } from '@/components/ui/skeleton'
 import WarningBlock from '@/components/warning-block'
+import DangerBlock from '@/components/danger-block'
+import LoadingBlock from '@/components/loading-block'
 
 export default function NumberMarketplacePage() {
   const [areaCode, setAreaCode] = useState<string>('')
@@ -22,10 +23,13 @@ export default function NumberMarketplacePage() {
     type: 'success' | 'error' | null
   } | null>(null)
 
-  // test deployment
-
   const { data, error, isLoading, mutate } = useSWR(
     shouldFetch ? `/api/twilio/available-phone-numbers?areaCode=${areaCode}` : null,
+    fetcher
+  )
+
+  const { data: subscriptionData, isLoading: loadingSubscriptionData } = useSWR(
+    `/api/stripe/check-subscription`,
     fetcher
   )
 
@@ -69,6 +73,13 @@ export default function NumberMarketplacePage() {
 
     checkIfUserHasNumber()
   }, [])
+
+  if (loadingSubscriptionData) return <LoadingBlock />
+
+  const hasAccess = subscriptionData?.hasAccess
+
+  if (!hasAccess)
+    return <DangerBlock text='You cannot get a phone number without an active subscription.' redirect={true} />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>
@@ -121,28 +132,11 @@ export default function NumberMarketplacePage() {
         </div>
       )}
 
-      {isLoading && (
-        <div className='space-y-3'>
-          <Skeleton className='h-[100px] w-full rounded-lg' />
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            <Skeleton className='h-[120px] rounded-lg' />
-            <Skeleton className='h-[120px] rounded-lg' />
-            <Skeleton className='h-[120px] rounded-lg' />
-          </div>
-        </div>
-      )}
+      {isLoading && <LoadingBlock />}
 
-      {error && (
-        <div className='p-3 mb-6 bg-destructive/10 border border-destructive/20 rounded-md'>
-          <p className='text-destructive'>Error loading numbers. Please try again.</p>
-        </div>
-      )}
+      {error && <DangerBlock text='Error loading numbers. Please try again.' />}
 
-      {numbers && numbers.length === 0 && (
-        <div className='p-3 mb-6 bg-amber-50 border border-amber-200 rounded-md'>
-          <p className='text-amber-800'>No numbers found for area code {areaCode}</p>
-        </div>
-      )}
+      {numbers && numbers.length === 0 && <WarningBlock text='No numbers found for area code {areaCode}' />}
 
       {!hasNumber && hasResults && (
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4'>

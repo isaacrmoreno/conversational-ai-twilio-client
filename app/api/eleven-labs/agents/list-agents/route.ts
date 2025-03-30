@@ -15,7 +15,7 @@ export async function GET() {
     const userAgentsFromDB = await db.select().from(agents).where(eq(agents.creator_id, user.id)).execute()
 
     if (userAgentsFromDB.length === 0) {
-      return NextResponse.json({ success: true }, { status: 200 })
+      return NextResponse.json({ success: true, data: userAgentsFromDB }, { status: 200 })
     }
 
     const formattedAgents = userAgentsFromDB.map((agent) => ({

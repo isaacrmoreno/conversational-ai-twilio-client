@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { toast } from 'sonner'
 import axios from 'axios'
 import DangerBlock from '@/components/danger-block'
+import LoadingBlock from '@/components/loading-block'
 
 export default function CallPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false)
@@ -20,17 +21,14 @@ export default function CallPage() {
 
   const { data: userAgents } = useSWR('/api/eleven-labs/agents/list-agents', fetcher)
   const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
-  const { data: subscriptionData } = useSWR(`/api/stripe/check-subscription`, fetcher)
+  const { data: subscriptionData, isLoading: loadingSubscriptionData } = useSWR(
+    `/api/stripe/check-subscription`,
+    fetcher
+  )
 
   const agents = userAgents?.data
   const twilioNumbers = userNumbers?.data
   const userTwilioNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
-
-  if (subscriptionData?.hasAccess === null) {
-    return <div>Loading subscription status...</div>
-  }
-
-  const hasAccess = subscriptionData?.hasAccess
 
   const handleStartCampaign = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -58,13 +56,11 @@ export default function CallPage() {
     }
   }
 
-  if (hasAccess === null) {
-    return <div>Loading...</div>
-  }
+  if (loadingSubscriptionData) return <LoadingBlock />
 
-  if (!hasAccess) {
-    return <DangerBlock text='Please ensure your subscription is active.' />
-  }
+  const hasAccess = subscriptionData?.hasAccess
+
+  if (!hasAccess) return <DangerBlock text='You cannot make calls without an active subscription.' redirect={true} />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>

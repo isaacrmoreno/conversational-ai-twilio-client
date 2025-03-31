@@ -17,8 +17,6 @@ export async function GET(req: Request) {
       page_size: 30
     })
 
-    console.log('response:', response)
-
     return NextResponse.json({ success: true, data: response })
   } catch (error) {
     console.error('Error fetching conversations:', error)

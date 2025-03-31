@@ -1,6 +1,5 @@
 'use client'
 
-import { useState } from 'react'
 import useSWR, { mutate } from 'swr'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { fetcher, formatDate } from '@/utils'
@@ -11,6 +10,7 @@ import axios from 'axios'
 import WarningBlock from '@/components/warning-block'
 import DangerBlock from '@/components/danger-block'
 import LoadingBlock from '@/components/loading-block'
+import UpdateAgentModal from '@/components/update-agent-modal'
 
 export default function AgentPage() {
   const { data, error, isLoading } = useSWR(`/api/eleven-labs/agents/list-agents`, fetcher)
@@ -20,8 +20,6 @@ export default function AgentPage() {
   )
 
   const agents = data?.data
-
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null)
 
   const isLoaded = Boolean(data)
   const hasAgents = isLoaded && Array.isArray(agents) && agents.length > 0
@@ -63,10 +61,7 @@ export default function AgentPage() {
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {agents.map((agent: any) => (
-          <Card
-            key={agent.agent_id}
-            className='overflow-hidden cursor-default'
-            onClick={() => setSelectedAgentId(agent.agent_id)}>
+          <Card key={agent.agent_id} className='overflow-hidden cursor-default'>
             <CardHeader className='pb-2'>
               <div className='flex justify-between items-start'>
                 <CardTitle className='text-lg'>{agent.name}</CardTitle>
@@ -85,7 +80,8 @@ export default function AgentPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter>
+            <CardFooter className='flex flex-row justify-between'>
+              <UpdateAgentModal agentId={agent.agent_id} name={agent.name} />
               <DeleteConfirmationModal onDelete={() => deleteAgent(agent.agent_id)} />
             </CardFooter>
           </Card>

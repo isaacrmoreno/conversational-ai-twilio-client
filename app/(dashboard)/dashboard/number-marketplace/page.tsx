@@ -12,6 +12,7 @@ import WarningBlock from '@/components/warning-block'
 import DangerBlock from '@/components/danger-block'
 import LoadingBlock from '@/components/loading-block'
 import PhoneNumberCard from '@/components/phone-number-card'
+import { toast } from 'sonner'
 
 export default function NumberMarketplacePage() {
   const [areaCode, setAreaCode] = useState<string>('')
@@ -21,6 +22,8 @@ export default function NumberMarketplacePage() {
     shouldFetch ? `/api/twilio/available-phone-numbers?areaCode=${areaCode}` : null,
     fetcher
   )
+
+  // const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
 
   const { data: subscriptionData, isLoading: loadingSubscriptionData } = useSWR(
     '/api/stripe/check-subscription',
@@ -43,6 +46,9 @@ export default function NumberMarketplacePage() {
   }
 
   const handleButtonClick = () => {
+    if (numberStatusData?.hasNumber) {
+      toast.error("You already have a phone number. You can't purchase another one.")
+    }
     if (hasResults) {
       mutate()
     } else {
@@ -56,9 +62,6 @@ export default function NumberMarketplacePage() {
 
   if (!hasAccess)
     return <DangerBlock text='You cannot get a phone number without an active subscription.' redirect={true} />
-
-  if (numberStatusData?.hasNumber)
-    return <WarningBlock text="You already have a phone number. You can't purchase another one." />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>

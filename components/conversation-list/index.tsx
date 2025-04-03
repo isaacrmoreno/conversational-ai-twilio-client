@@ -59,9 +59,6 @@ export default function ConversationList({ agentId }: Props) {
                 <div className='bg-muted rounded-md p-2'>
                   <MessageSquare className='h-5 w-5 text-muted-foreground' />
                 </div>
-                <div>
-                  <p className='text-sm font-medium'>Today, {formatDate(conversation.start_time_unix_secs)}</p>
-                </div>
               </div>
 
               <div className='flex items-center gap-4'>

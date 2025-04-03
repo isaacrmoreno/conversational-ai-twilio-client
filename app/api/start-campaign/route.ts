@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { forbiddenPatterns } from './forbiddenPatterns'
-import { addCallToQueue } from './addCallToQueue' // Import the addCallToQueue function
+// import { addCallToQueue } from './addCallToQueue' // Import the addCallToQueue function
 import OpenAI from 'openai'
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
     await new Promise((r) => setTimeout(r, 3000))
 
     try {
-      await addCallToQueue(agent_id, from, to, prompt, first_message) // Add the call to the queue
+      // await addCallToQueue(agent_id, from, to, prompt, first_message) // Add the call to the queue
       const res = await fetch(`${process.env.RENDER_URL}/outbound-call`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

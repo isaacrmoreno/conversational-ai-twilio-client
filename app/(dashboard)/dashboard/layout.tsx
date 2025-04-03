@@ -11,11 +11,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   const navItems = [
-    { href: '/dashboard/number-marketplace', icon: Phone, label: 'Number Marketplace' },
+    // { href: '/dashboard/number-marketplace', icon: Phone, label: 'Number Marketplace' },
     { href: '/dashboard/agent', icon: Bot, label: 'agent' },
     { href: '/dashboard/call', icon: Phone, label: 'Call' },
+    // { href: '/dashboard/knowledge-base', icon: Phone, label: 'Knowledge Base' },
     { href: '/dashboard/call-history', icon: MessageSquare, label: 'Call History' },
-    { href: '/dashboard', icon: Users, label: 'Team' },
+    // { href: '/dashboard', icon: Users, label: 'Team' },
     { href: '/dashboard/general', icon: Settings, label: 'General' },
     { href: '/dashboard/activity', icon: Activity, label: 'Activity' },
     { href: '/dashboard/security', icon: Shield, label: 'Security' }

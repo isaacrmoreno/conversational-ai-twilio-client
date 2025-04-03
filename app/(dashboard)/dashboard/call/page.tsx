@@ -20,15 +20,17 @@ export default function CallPage() {
   const [outboundPhoneNumbers, setOutboundPhoneNumbers] = useState<string[]>([])
 
   const { data: userAgents } = useSWR('/api/eleven-labs/agents/list-agents', fetcher)
-  const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
+  // const { data: userNumbers } = useSWR('/api/numbers/fetch-user-numbers', fetcher)
   const { data: subscriptionData, isLoading: loadingSubscriptionData } = useSWR(
     `/api/stripe/check-subscription`,
     fetcher
   )
 
   const agents = userAgents?.data
-  const twilioNumbers = userNumbers?.data
-  const userTwilioNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
+  // const twilioNumbers = userNumbers?.data
+  // const userTwilioNumbers = twilioNumbers?.map((number: any) => number.replace('+1', ''))
+
+  // 9717152650
 
   const handleStartCampaign = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -88,7 +90,13 @@ export default function CallPage() {
             </select>
 
             <div className='space-y-2'>
-              {userTwilioNumbers?.length > 0 ? (
+              <select id='from_number' name='from_number' className='w-full p-2 border rounded-lg' required>
+                <option value=''>Select a phone number</option>
+                <option key={9717152650} value={9717152650}>
+                  {9717152650}
+                </option>
+              </select>
+              {/* {userTwilioNumbers?.length > 0 ? (
                 <select id='from_number' name='from_number' className='w-full p-2 border rounded-lg' required>
                   <option value=''>Select a phone number</option>
                   {userTwilioNumbers?.map((number: number) => (
@@ -104,7 +112,7 @@ export default function CallPage() {
                   </Link>
                   <p className='text-sm text-muted-foreground'>You don't have any phone numbers. Get one to proceed.</p>
                 </div>
-              )}
+              )} */}
             </div>
             <Textarea id='prompt' name='prompt' placeholder='Enter the AI prompt or call script' required />
             <Textarea

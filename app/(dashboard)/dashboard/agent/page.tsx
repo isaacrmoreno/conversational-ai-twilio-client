@@ -43,8 +43,8 @@ export default function AgentPage() {
 
   const hasAccess = subscriptionData?.hasAccess
 
-  if (!hasAccess)
-    return <DangerBlock text='You cannot create an agent without an active subscription.' redirect={true} />
+  // if (!hasAccess)
+  //   return <DangerBlock text='You cannot create an agent without an active subscription.' redirect={true} />
 
   if (isLoading) return <LoadingBlock />
 

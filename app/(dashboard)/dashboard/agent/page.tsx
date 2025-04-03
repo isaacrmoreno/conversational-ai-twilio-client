@@ -50,14 +50,14 @@ export default function AgentPage() {
 
   if (error) return <DangerBlock text='Error loading agents. Please try again.' />
 
-  if (!hasAgents) return <WarningBlock text='No agents found. Create one to get started.' />
-
   return (
     <section className='flex-1 p-4 lg:p-8'>
       <div className='flex justify-between'>
         <h1 className='text-lg lg:text-2xl font-medium bold text-gray-900 mb-6'>Agent Management</h1>
         <AddAgentModal />
       </div>
+
+      {!hasAgents && <WarningBlock text='No agents found. Create one to get started.' />}
 
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
         {agents.map((agent: any) => (

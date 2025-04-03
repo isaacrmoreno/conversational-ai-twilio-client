@@ -62,7 +62,7 @@ export default function CallPage() {
 
   const hasAccess = subscriptionData?.hasAccess
 
-  if (!hasAccess) return <DangerBlock text='You cannot make calls without an active subscription.' redirect={true} />
+  // if (!hasAccess) return <DangerBlock text='You cannot make calls without an active subscription.' redirect={true} />
 
   return (
     <section className='flex-1 p-4 lg:p-8'>
